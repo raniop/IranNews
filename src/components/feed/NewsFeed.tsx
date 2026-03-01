@@ -9,6 +9,7 @@ import CategoryFilterBar from '@/components/shared/CategoryFilterBar';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
 import EmptyState from '@/components/shared/EmptyState';
 import ErrorBanner from '@/components/shared/ErrorBanner';
+import WarPredictionCard from '@/components/shared/WarPredictionCard';
 import { useLanguage } from '@/hooks/useLanguage';
 import { useHebrewTitles } from '@/hooks/useHebrewTitles';
 
@@ -111,6 +112,9 @@ export default function NewsFeed() {
           }
         />
       )}
+
+      {/* War Prediction */}
+      {articles.length > 0 && <WarPredictionCard />}
 
       {/* Articles grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">

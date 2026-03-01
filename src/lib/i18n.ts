@@ -108,6 +108,24 @@ const translations = {
   'analytics.traffic24h': { en: 'Traffic (Last 24h)', he: 'תעבורה (24 שעות)' },
   'analytics.autoRefresh': { en: 'Auto-refreshing every 3 seconds', he: 'מתרענן כל 3 שניות' },
 
+  // War Prediction
+  'prediction.title': { en: 'Conflict Forecast', he: 'תחזית עימות' },
+  'prediction.score': { en: 'Peace Score', he: 'ציון שלום' },
+  'prediction.loading': { en: 'Analyzing conflict signals...', he: 'מנתח סימני עימות...' },
+  'prediction.error': { en: 'Could not load prediction', he: 'לא ניתן לטעון תחזית' },
+  'prediction.escalating': { en: 'Escalating', he: 'הסלמה' },
+  'prediction.stable': { en: 'Stable', he: 'יציב' },
+  'prediction.de-escalating': { en: 'De-escalating', he: 'הרגעה' },
+  'prediction.critical': { en: 'Critical', he: 'קריטי' },
+  'prediction.high': { en: 'High Risk', he: 'סיכון גבוה' },
+  'prediction.moderate': { en: 'Moderate', he: 'בינוני' },
+  'prediction.low': { en: 'Low Risk', he: 'סיכון נמוך' },
+  'prediction.escalation': { en: 'Escalation Factors', he: 'גורמי הסלמה' },
+  'prediction.deescalation': { en: 'De-escalation Signals', he: 'סימני הרגעה' },
+  'prediction.updated': { en: 'Updated', he: 'עודכן' },
+  'prediction.basedOn': { en: 'Based on', he: 'מבוסס על' },
+  'prediction.articles': { en: 'recent articles', he: 'כתבות אחרונות' },
+
   // Common
   'common.retry': { en: 'Retry', he: 'נסה שוב' },
 } as const;

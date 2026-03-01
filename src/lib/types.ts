@@ -110,3 +110,14 @@ export interface SourceFetchResult {
   articles: Article[];
   error?: string;
 }
+
+export interface WarPrediction {
+  score: number; // 1-100 (1=full war, 100=peace)
+  trend: 'escalating' | 'stable' | 'de-escalating';
+  riskLevel: 'low' | 'moderate' | 'high' | 'critical';
+  escalationFactors: string[];
+  deescalationFactors: string[];
+  summary: string;
+  analyzedAt: string;
+  articleCount: number;
+}

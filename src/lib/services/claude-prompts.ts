@@ -100,6 +100,35 @@ ${titlesText}`,
   };
 }
 
+export function warPredictionPrompt(articleSummaries: string) {
+  return {
+    system: `You are an expert geopolitical analyst specializing in the Iran-Israel-US conflict. You analyze news patterns to assess the current trajectory of the conflict.
+
+Analyze the provided recent news headlines and return a JSON assessment with this exact structure:
+{
+  "score": <number 1-100, where 1=active full-scale war/extreme escalation, 50=tense standoff, 100=peace/resolution>,
+  "trend": "<escalating|stable|de-escalating>",
+  "riskLevel": "<critical|high|moderate|low>",
+  "escalationFactors": ["<factor1>", "<factor2>", "<factor3>"],
+  "deescalationFactors": ["<factor1>", "<factor2>", "<factor3>"],
+  "summary": "<1-2 sentence assessment of the current situation>"
+}
+
+Guidelines for scoring:
+- 1-15: Active large-scale military operations, full war
+- 16-30: Major military strikes, significant casualties
+- 31-45: Heightened tensions, limited military actions, proxy conflicts
+- 46-60: Political standoff, sanctions, hostile rhetoric, no direct conflict
+- 61-75: Reduced tensions, back-channel diplomacy
+- 76-90: Active negotiations, ceasefire talks
+- 91-100: Peace agreement, normalized relations
+
+Provide exactly 3 escalation factors and up to 3 de-escalation factors based on the actual news content. Keep factors concise (3-6 words each).
+Return ONLY valid JSON, no other text.`,
+    user: `Analyze these recent news headlines about the Iran conflict and assess the war/peace trajectory:\n\n${articleSummaries}`,
+  };
+}
+
 export function batchTranslatePersianPrompt(titles: string[]) {
   const numbered = titles.map((t, i) => `${i + 1}. ${t}`).join('\n');
 
