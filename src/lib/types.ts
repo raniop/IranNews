@@ -120,15 +120,25 @@ export interface SourceFetchResult {
 
 export interface ArsenalData {
   lastUpdated: string;
-  missiles: {
-    currentEstimate: number;
-    peakInventory: number;
-    peakSource: string;
-    depletedJune2025: { low: number; high: number };
+  rockets: {
+    remaining: number;
+    started: number;
+    gone: number;
+    remainingPercent: number;
   };
   launchers: {
-    totalFleet: number;
-    lossesPercent: number;
+    remaining: number;
+    started: number;
+    gone: number;
+    remainingPercent: number;
+  };
+  systemStatus: {
+    autoScanner: boolean;
+    aiParser: boolean;
+    feeds: number;
+    intervalMin: number;
+    lastScan?: string;
+    nextScan?: string;
   };
   timeline: { date: string; missiles: number; label: string }[];
   sources: string[];

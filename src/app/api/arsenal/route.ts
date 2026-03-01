@@ -12,11 +12,27 @@ export async function GET() {
   const now = Date.now();
 
   if (cached && now - cached.fetchedAt < CACHE_TTL) {
-    return NextResponse.json(cached.data);
+    // Update scan times dynamically
+    const data = {
+      ...cached.data,
+      systemStatus: {
+        ...cached.data.systemStatus,
+        lastScan: new Date(cached.fetchedAt).toISOString(),
+        nextScan: new Date(cached.fetchedAt + CACHE_TTL).toISOString(),
+      },
+    };
+    return NextResponse.json(data);
   }
 
   // Try to scrape fresh data from iranrocketsarsenal.com
-  let data: ArsenalData = ARSENAL_BASELINE;
+  let data: ArsenalData = {
+    ...ARSENAL_BASELINE,
+    systemStatus: {
+      ...ARSENAL_BASELINE.systemStatus,
+      lastScan: new Date(now).toISOString(),
+      nextScan: new Date(now + CACHE_TTL).toISOString(),
+    },
+  };
 
   try {
     const res = await fetch('https://iranrocketsarsenal.com', {
@@ -36,17 +52,20 @@ export async function GET() {
       if (scriptMatch) {
         try {
           const embedded = JSON.parse(scriptMatch[1]);
-          // Try to extract relevant data if structure matches
-          if (embedded?.props?.pageProps?.missiles) {
+          if (embedded?.props?.pageProps) {
             const props = embedded.props.pageProps;
-            data = {
-              ...ARSENAL_BASELINE,
-              lastUpdated: new Date().toISOString(),
-              missiles: {
-                ...ARSENAL_BASELINE.missiles,
-                currentEstimate: props.missiles.current ?? ARSENAL_BASELINE.missiles.currentEstimate,
-              },
-            };
+            if (props.rockets?.remaining) {
+              data = {
+                ...data,
+                lastUpdated: new Date().toISOString(),
+                rockets: {
+                  remaining: props.rockets.remaining,
+                  started: props.rockets.started ?? data.rockets.started,
+                  gone: props.rockets.gone ?? data.rockets.gone,
+                  remainingPercent: props.rockets.remainingPercent ?? data.rockets.remainingPercent,
+                },
+              };
+            }
           }
         } catch {
           // JSON parse failed, use baseline
@@ -54,13 +73,18 @@ export async function GET() {
       }
 
       // Also try to find specific numbers in the HTML
-      const missileMatch = html.match(/~?([\d,]+)\s*(?:missiles|ballistic)/i);
-      if (missileMatch) {
-        const count = parseInt(missileMatch[1].replace(/,/g, ''), 10);
-        if (count > 100 && count < 10000) {
+      const rocketMatch = html.match(/(\d{3,4})\s*<[^>]*>.*?(?:remaining|ballistic)/i);
+      if (rocketMatch) {
+        const count = parseInt(rocketMatch[1], 10);
+        if (count > 100 && count < 5000) {
           data = {
             ...data,
-            missiles: { ...data.missiles, currentEstimate: count },
+            rockets: {
+              ...data.rockets,
+              remaining: count,
+              gone: data.rockets.started - count,
+              remainingPercent: Math.round((count / data.rockets.started) * 1000) / 10,
+            },
             lastUpdated: new Date().toISOString(),
           };
         }
