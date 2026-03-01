@@ -7,6 +7,10 @@ export const CLAUDE_MODEL = 'claude-sonnet-4-20250514';
 export const CLAUDE_MODEL_FAST = 'claude-haiku-4-5-20251001';
 export const CLAUDE_MAX_TOKENS = 1024;
 
+// Supabase (anon key is safe to expose - it's designed to be public)
+export const SUPABASE_URL = 'https://klctwlitekaqdbamlfpn.supabase.co';
+export const SUPABASE_ANON_KEY = 'sb_publishable_Usltmj6DeTXB2fENaq03Fg_JydDelVZ';
+
 // Cache
 export const CACHE_REVALIDATE_SECONDS = 300; // 5 minutes
 export const MAX_ARTICLES_PER_SOURCE = 100;
