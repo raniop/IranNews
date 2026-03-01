@@ -35,48 +35,54 @@ export function useHebrewTitles(articles: Article[]) {
     }
 
     fetchingRef.current = true;
-    try {
-      // Send in batches of 10
-      for (let i = 0; i < untranslated.length; i += 10) {
-        const batch = untranslated.slice(i, i + 10).map((a) => ({
+
+    // Build batches of 10
+    const batches: Array<{ id: string; title: string; description?: string }[]> = [];
+    for (let i = 0; i < untranslated.length; i += 10) {
+      batches.push(
+        untranslated.slice(i, i + 10).map((a) => ({
           id: a.id,
           title: a.title,
           description: a.articleDescription,
-        }));
+        }))
+      );
+    }
 
-        const res = await fetch('/api/translate-titles', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ items: batch }),
-        });
+    // Helper to update state from cache
+    const updateState = () => {
+      const result: Record<string, Translation> = {};
+      for (const a of items) {
+        const t = clientCache.get(a.id);
+        if (t) result[a.id] = t;
+      }
+      setTranslations(result);
+    };
 
-        if (res.ok) {
-          const data = await res.json();
-          if (data.translations) {
-            for (const [id, t] of Object.entries(data.translations)) {
-              clientCache.set(id, t as Translation);
+    // Send all batches in parallel, update state as each completes
+    await Promise.all(
+      batches.map(async (batch) => {
+        try {
+          const res = await fetch('/api/translate-titles', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ items: batch }),
+          });
+          if (res.ok) {
+            const data = await res.json();
+            if (data.translations) {
+              for (const [id, t] of Object.entries(data.translations)) {
+                clientCache.set(id, t as Translation);
+              }
+              updateState();
             }
           }
-          if (data.error) {
-            console.warn('[translate] API error:', data.error);
-          }
-        } else {
-          console.warn('[translate] HTTP', res.status);
+        } catch {
+          // Silently fail for this batch
         }
-      }
-    } catch {
-      // Silently fail - show original titles
-    } finally {
-      fetchingRef.current = false;
-    }
+      })
+    );
 
-    // Update state with all cached translations
-    const result: Record<string, Translation> = {};
-    for (const a of items) {
-      const t = clientCache.get(a.id);
-      if (t) result[a.id] = t;
-    }
-    setTranslations(result);
+    fetchingRef.current = false;
   }, []);
 
   useEffect(() => {

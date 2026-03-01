@@ -177,20 +177,17 @@ export default function WarPredictionCard({ articles }: { articles: Article[] })
           <p className="font-semibold text-zinc-900 dark:text-white">
             {t('prediction.infoTitle')}
           </p>
-          <p className="text-[11px] leading-relaxed" dir="ltr">
+          <div className="grid grid-cols-2 gap-x-4 gap-y-0.5 text-[11px]">
             {t('prediction.infoScale').split(' | ').map((segment, i) => {
               const colors = [
                 'text-red-600', 'text-red-500', 'text-orange-500',
                 'text-yellow-600', 'text-lime-600', 'text-green-500', 'text-green-600',
               ];
               return (
-                <span key={i}>
-                  {i > 0 && <span className="text-zinc-300 dark:text-zinc-600 mx-1">|</span>}
-                  <span className={`${colors[i]} font-medium`}>{segment}</span>
-                </span>
+                <span key={i} className={`${colors[i]} font-medium`}>{segment}</span>
               );
             })}
-          </p>
+          </div>
           <p className="text-[11px] text-zinc-500 dark:text-zinc-400">
             {t('prediction.infoDesc')}
           </p>
