@@ -2,7 +2,8 @@ import { CLAUDE_API_ENDPOINT, CLAUDE_API_VERSION, CLAUDE_MODEL, CLAUDE_MAX_TOKEN
 
 export async function sendClaudeMessage(
   systemPrompt: string,
-  userMessage: string
+  userMessage: string,
+  maxTokens?: number
 ): Promise<string> {
   const apiKey = process.env.CLAUDE_API_KEY;
   if (!apiKey) {
@@ -18,7 +19,7 @@ export async function sendClaudeMessage(
     },
     body: JSON.stringify({
       model: CLAUDE_MODEL,
-      max_tokens: CLAUDE_MAX_TOKENS,
+      max_tokens: maxTokens || CLAUDE_MAX_TOKENS,
       system: systemPrompt,
       messages: [{ role: 'user', content: userMessage }],
     }),

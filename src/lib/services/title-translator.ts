@@ -54,7 +54,7 @@ Return ONLY valid JSON, no other text.`;
 
     const userMessage = `Translate these ${toTranslate.length} items to Hebrew:\n\n${numbered.join('\n\n')}`;
 
-    const response = await sendClaudeMessage(systemPrompt, userMessage);
+    const response = await sendClaudeMessage(systemPrompt, userMessage, 4096);
     const parsed = parseClaudeJSON<Array<{ i: number; title: string; description?: string | null }>>(response);
 
     if (parsed && Array.isArray(parsed)) {

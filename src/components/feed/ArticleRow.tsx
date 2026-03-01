@@ -22,6 +22,37 @@ const CATEGORY_GRADIENTS: Record<NewsCategory, string> = {
 // Global cache so we don't re-fetch og:image for the same URL across re-renders
 const ogImageCache = new Map<string, string | null>();
 
+// Throttled og:image fetcher - max 4 concurrent requests
+const ogQueue: Array<{ url: string; resolve: (img: string | null) => void }> = [];
+let ogInFlight = 0;
+const OG_MAX_CONCURRENT = 4;
+
+function processOgQueue() {
+  while (ogInFlight < OG_MAX_CONCURRENT && ogQueue.length > 0) {
+    const item = ogQueue.shift()!;
+    ogInFlight++;
+    fetch('/api/og-image', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ url: item.url }),
+    })
+      .then(r => r.json())
+      .then(data => item.resolve(data.image || null))
+      .catch(() => item.resolve(null))
+      .finally(() => {
+        ogInFlight--;
+        processOgQueue();
+      });
+  }
+}
+
+function fetchOgImage(url: string): Promise<string | null> {
+  return new Promise((resolve) => {
+    ogQueue.push({ url, resolve });
+    processOgQueue();
+  });
+}
+
 export default function ArticleRow({ article, hebrewTitle, hebrewDescription }: ArticleRowProps) {
   const config = CATEGORY_CONFIG[article.category];
   const [imgFailed, setImgFailed] = useState(false);
@@ -30,30 +61,18 @@ export default function ArticleRow({ article, hebrewTitle, hebrewDescription }: 
   });
   const [ogFetched, setOgFetched] = useState(() => ogImageCache.has(article.url));
 
-  // Lazily fetch og:image when article has no image
+  // Lazily fetch og:image when article has no image (throttled)
   useEffect(() => {
     if (article.imageURL || ogFetched) return;
 
     let cancelled = false;
-    fetch('/api/og-image', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ url: article.url }),
-    })
-      .then(r => r.json())
-      .then(data => {
-        if (!cancelled) {
-          ogImageCache.set(article.url, data.image || null);
-          setOgImage(data.image || null);
-          setOgFetched(true);
-        }
-      })
-      .catch(() => {
-        if (!cancelled) {
-          ogImageCache.set(article.url, null);
-          setOgFetched(true);
-        }
-      });
+    fetchOgImage(article.url).then((image) => {
+      if (!cancelled) {
+        ogImageCache.set(article.url, image);
+        setOgImage(image);
+        setOgFetched(true);
+      }
+    });
 
     return () => { cancelled = true; };
   }, [article.imageURL, article.url, ogFetched]);

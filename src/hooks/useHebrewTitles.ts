@@ -36,9 +36,9 @@ export function useHebrewTitles(articles: Article[]) {
 
     fetchingRef.current = true;
     try {
-      // Send in batches of 20
-      for (let i = 0; i < untranslated.length; i += 20) {
-        const batch = untranslated.slice(i, i + 20).map((a) => ({
+      // Send in batches of 10
+      for (let i = 0; i < untranslated.length; i += 10) {
+        const batch = untranslated.slice(i, i + 10).map((a) => ({
           id: a.id,
           title: a.title,
           description: a.articleDescription,
