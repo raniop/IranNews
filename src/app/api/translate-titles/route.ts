@@ -16,8 +16,9 @@ export async function POST(request: Request) {
     const translations = await translateBatch(batch);
     return NextResponse.json({ translations });
   } catch (error) {
-    console.error('Translate titles error:', error);
-    return NextResponse.json({ translations: {} });
+    const msg = error instanceof Error ? error.message : 'Unknown error';
+    console.error('Translate titles error:', msg);
+    return NextResponse.json({ translations: {}, error: msg });
   }
 }
 

@@ -57,6 +57,11 @@ export function useHebrewTitles(articles: Article[]) {
               clientCache.set(id, t as Translation);
             }
           }
+          if (data.error) {
+            console.warn('[translate] API error:', data.error);
+          }
+        } else {
+          console.warn('[translate] HTTP', res.status);
         }
       }
     } catch {

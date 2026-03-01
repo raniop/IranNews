@@ -114,7 +114,7 @@ export default function NewsFeed() {
       )}
 
       {/* War Prediction */}
-      {articles.length > 0 && <WarPredictionCard />}
+      {articles.length > 0 && <WarPredictionCard articles={articles} />}
 
       {/* Articles grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">

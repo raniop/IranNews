@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { WarPrediction } from '@/lib/types';
+import { Article, WarPrediction } from '@/lib/types';
 import { useLanguage } from '@/hooks/useLanguage';
 
 function scoreColor(score: number): string {
@@ -84,17 +84,24 @@ function timeAgo(isoDate: string, lang: string): string {
   return lang === 'he' ? `לפני ${hrs} שע׳` : `${hrs}h ago`;
 }
 
-export default function WarPredictionCard() {
+export default function WarPredictionCard({ articles }: { articles: Article[] }) {
   const { t, lang } = useLanguage();
   const [prediction, setPrediction] = useState<WarPrediction | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
 
-  const fetchPrediction = useCallback(async () => {
+  const fetchPrediction = useCallback(async (arts: Article[]) => {
     setLoading(true);
     setError(false);
     try {
-      const res = await fetch('/api/ai/war-prediction');
+      const titles = arts.slice(0, 50).map(
+        (a) => `[${a.sourceID}/${a.category}] ${a.title}`
+      );
+      const res = await fetch('/api/ai/war-prediction', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ titles }),
+      });
       if (!res.ok) throw new Error('Failed');
       const data = await res.json();
       setPrediction(data.prediction);
@@ -106,8 +113,10 @@ export default function WarPredictionCard() {
   }, []);
 
   useEffect(() => {
-    fetchPrediction();
-  }, [fetchPrediction]);
+    if (articles.length > 0) {
+      fetchPrediction(articles);
+    }
+  }, [articles, fetchPrediction]);
 
   if (loading) {
     return (
@@ -129,7 +138,7 @@ export default function WarPredictionCard() {
       <div className="rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 p-4 mb-4">
         <p className="text-sm text-zinc-500">{t('prediction.error')}</p>
         <button
-          onClick={fetchPrediction}
+          onClick={() => fetchPrediction(articles)}
           className="mt-2 text-sm text-blue-500 hover:text-blue-600"
         >
           {t('common.retry')}
