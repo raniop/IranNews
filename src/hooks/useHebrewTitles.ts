@@ -36,11 +36,11 @@ export function useHebrewTitles(articles: Article[]) {
 
     fetchingRef.current = true;
 
-    // Build batches of 10
+    // Build batches of 25 (matches API limit)
     const batches: Array<{ id: string; title: string; description?: string }[]> = [];
-    for (let i = 0; i < untranslated.length; i += 10) {
+    for (let i = 0; i < untranslated.length; i += 25) {
       batches.push(
-        untranslated.slice(i, i + 10).map((a) => ({
+        untranslated.slice(i, i + 25).map((a) => ({
           id: a.id,
           title: a.title,
           description: a.articleDescription,

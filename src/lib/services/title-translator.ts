@@ -1,4 +1,5 @@
 import { sendClaudeMessage, parseClaudeJSON } from './claude-api';
+import { CLAUDE_MODEL_FAST } from '../constants';
 
 // In-memory cache for Hebrew translations: articleId -> { title, description }
 const hebrewCache = new Map<string, { title: string; description?: string }>();
@@ -54,7 +55,7 @@ Return ONLY valid JSON, no other text.`;
 
     const userMessage = `Translate these ${toTranslate.length} items to Hebrew:\n\n${numbered.join('\n\n')}`;
 
-    const response = await sendClaudeMessage(systemPrompt, userMessage, 4096);
+    const response = await sendClaudeMessage(systemPrompt, userMessage, 4096, { model: CLAUDE_MODEL_FAST });
     const parsed = parseClaudeJSON<Array<{ i: number; title: string; description?: string | null }>>(response);
 
     if (parsed && Array.isArray(parsed)) {

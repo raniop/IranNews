@@ -4,6 +4,7 @@ export const APP_NAME = 'IranNews';
 export const CLAUDE_API_ENDPOINT = 'https://api.anthropic.com/v1/messages';
 export const CLAUDE_API_VERSION = '2023-06-01';
 export const CLAUDE_MODEL = 'claude-sonnet-4-20250514';
+export const CLAUDE_MODEL_FAST = 'claude-haiku-4-5-20251001';
 export const CLAUDE_MAX_TOKENS = 1024;
 
 // Cache
