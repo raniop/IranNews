@@ -36,7 +36,7 @@ export default function NewsFeed() {
   };
 
   return (
-    <div className="max-w-3xl mx-auto px-4 py-4">
+    <div className="max-w-6xl mx-auto px-4 py-4">
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <div>
@@ -110,8 +110,8 @@ export default function NewsFeed() {
         />
       )}
 
-      {/* Articles */}
-      <div className="divide-y divide-zinc-100 dark:divide-zinc-800/50">
+      {/* Articles grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {filtered.map((article) => (
           <ArticleRow key={article.id} article={article} />
         ))}
