@@ -1,6 +1,8 @@
-// In-memory visitor tracker using heartbeat mechanism
-// Each visitor sends a heartbeat every 15 seconds
-// Visitors are considered "gone" after 30 seconds of no heartbeat
+// Visitor tracker with Supabase persistence
+// Live visitors: in-memory (transient, 30s timeout)
+// Page views + history: persisted in Supabase
+
+import { supabase } from '../supabase';
 
 interface VisitorInfo {
   lastSeen: number;
@@ -8,19 +10,15 @@ interface VisitorInfo {
   referrer?: string;
 }
 
+// In-memory for live visitor tracking (transient by nature)
 const visitors = new Map<string, VisitorInfo>();
-const TIMEOUT_MS = 30_000; // 30 seconds
+const TIMEOUT_MS = 30_000;
 
-// Page view history for the dashboard (last 24h in 5-min buckets)
-interface PageViewBucket {
-  ts: number; // start of 5-min bucket
-  views: number;
-}
-
-const BUCKET_SIZE = 5 * 60 * 1000; // 5 minutes
-const MAX_BUCKETS = 288; // 24 hours
-const pageViewBuckets: PageViewBucket[] = [];
-let totalPageViews = 0;
+// Cache for Supabase queries (avoid hitting DB every 3s)
+let cachedTotal: number | null = null;
+let cachedHistory: { time: string; views: number }[] | null = null;
+let cacheTimestamp = 0;
+const CACHE_TTL = 15_000; // 15 seconds
 
 function cleanStale() {
   const now = Date.now();
@@ -29,23 +27,6 @@ function cleanStale() {
       visitors.delete(id);
     }
   }
-}
-
-function getCurrentBucket(): PageViewBucket {
-  const now = Date.now();
-  const bucketStart = Math.floor(now / BUCKET_SIZE) * BUCKET_SIZE;
-
-  if (pageViewBuckets.length === 0 || pageViewBuckets[pageViewBuckets.length - 1].ts !== bucketStart) {
-    const bucket = { ts: bucketStart, views: 0 };
-    pageViewBuckets.push(bucket);
-    // Trim old buckets
-    while (pageViewBuckets.length > MAX_BUCKETS) {
-      pageViewBuckets.shift();
-    }
-    return bucket;
-  }
-
-  return pageViewBuckets[pageViewBuckets.length - 1];
 }
 
 export function heartbeat(visitorId: string, page: string, referrer?: string): void {
@@ -57,31 +38,94 @@ export function heartbeat(visitorId: string, page: string, referrer?: string): v
   });
 
   if (isNew) {
-    totalPageViews++;
-    getCurrentBucket().views++;
+    // Persist to Supabase (fire-and-forget)
+    supabase
+      .from('page_views')
+      .insert({ visitor_id: visitorId, page, referrer })
+      .then(({ error }) => {
+        if (error) console.error('Supabase insert error:', error.message);
+      });
+
+    // Invalidate cache so next getStats() fetches fresh data
+    cachedTotal = null;
+    cachedHistory = null;
   }
 }
 
-export function getStats() {
+async function fetchTotalPageViews(): Promise<number> {
+  const { count, error } = await supabase
+    .from('page_views')
+    .select('*', { count: 'exact', head: true });
+
+  if (error) {
+    console.error('Supabase count error:', error.message);
+    return 0;
+  }
+  return count ?? 0;
+}
+
+async function fetchHistory(): Promise<{ time: string; views: number }[]> {
+  // Get page views from last 24 hours, grouped by 5-min buckets
+  const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+
+  const { data, error } = await supabase
+    .from('page_views')
+    .select('created_at')
+    .gte('created_at', since)
+    .order('created_at', { ascending: true });
+
+  if (error) {
+    console.error('Supabase history error:', error.message);
+    return [];
+  }
+
+  if (!data || data.length === 0) return [];
+
+  // Group into 5-minute buckets
+  const BUCKET_MS = 5 * 60 * 1000;
+  const buckets = new Map<number, number>();
+
+  for (const row of data) {
+    const ts = new Date(row.created_at).getTime();
+    const bucketStart = Math.floor(ts / BUCKET_MS) * BUCKET_MS;
+    buckets.set(bucketStart, (buckets.get(bucketStart) || 0) + 1);
+  }
+
+  return Array.from(buckets.entries())
+    .sort((a, b) => a[0] - b[0])
+    .map(([ts, views]) => ({
+      time: new Date(ts).toISOString(),
+      views,
+    }));
+}
+
+export async function getStats() {
   cleanStale();
 
-  // Count visitors per page
+  const now = Date.now();
+  const cacheExpired = now - cacheTimestamp > CACHE_TTL;
+
+  // Fetch from Supabase if cache expired
+  if (cacheExpired || cachedTotal === null || cachedHistory === null) {
+    const [total, history] = await Promise.all([
+      fetchTotalPageViews(),
+      fetchHistory(),
+    ]);
+    cachedTotal = total;
+    cachedHistory = history;
+    cacheTimestamp = now;
+  }
+
+  // Count visitors per page (from in-memory live data)
   const pageBreakdown: Record<string, number> = {};
   for (const [, info] of visitors) {
     pageBreakdown[info.page] = (pageBreakdown[info.page] || 0) + 1;
   }
 
-  // Get last 24h of page views (recent buckets)
-  const now = Date.now();
-  const cutoff = now - 24 * 60 * 60 * 1000;
-  const recentBuckets = pageViewBuckets
-    .filter(b => b.ts >= cutoff)
-    .map(b => ({ time: new Date(b.ts).toISOString(), views: b.views }));
-
   return {
     liveVisitors: visitors.size,
     pageBreakdown,
-    totalPageViews,
-    history: recentBuckets,
+    totalPageViews: cachedTotal,
+    history: cachedHistory,
   };
 }

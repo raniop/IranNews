@@ -102,7 +102,7 @@ const translations = {
   'analytics.liveNow': { en: 'Live Now', he: 'עכשיו באתר' },
   'analytics.activeVisitors': { en: 'active visitors', he: 'מבקרים פעילים' },
   'analytics.totalPageViews': { en: 'Total Page Views', he: 'סה"כ צפיות' },
-  'analytics.sinceStart': { en: 'since server start', he: 'מאז עליית השרת' },
+  'analytics.sinceStart': { en: 'all time', he: 'סה"כ מההתחלה' },
   'analytics.activePages': { en: 'Active Pages', he: 'עמודים פעילים' },
   'analytics.pagesViewed': { en: 'pages being viewed', he: 'עמודים בצפייה' },
   'analytics.visitorsByPage': { en: 'Visitors by Page', he: 'מבקרים לפי עמוד' },
