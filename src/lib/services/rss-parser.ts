@@ -140,5 +140,14 @@ function extractImageURL(item: RSSItem): string | undefined {
     }
   }
 
+  // Extract <img src="..."> from description/content HTML
+  const htmlContent = item.description || item['content:encoded'] || item.summary || '';
+  if (typeof htmlContent === 'string') {
+    const imgMatch = htmlContent.match(/<img[^>]+src=["']([^"']+)["']/i);
+    if (imgMatch?.[1]) {
+      return imgMatch[1];
+    }
+  }
+
   return undefined;
 }

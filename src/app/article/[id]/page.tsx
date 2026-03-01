@@ -1,6 +1,7 @@
 'use client';
 
 import { useParams, useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
 import { useArticles } from '@/hooks/useArticles';
 import { useAISummarize, useAIAnalyze, useAITranslate } from '@/hooks/useAI';
 import { CATEGORY_CONFIG } from '@/lib/types';
@@ -15,9 +16,31 @@ export default function ArticleDetailPage() {
   const { articles, isLoading } = useArticles();
   const article = articles.find((a) => a.id === id);
 
+  const [content, setContent] = useState<string | null>(null);
+  const [ogImage, setOgImage] = useState<string | null>(null);
+  const [contentLoading, setContentLoading] = useState(false);
+
   const { summary, loading: summaryLoading, summarize } = useAISummarize();
   const { analysis, loading: analysisLoading, analyze } = useAIAnalyze();
   const { translation, loading: translateLoading, translate } = useAITranslate();
+
+  // Fetch full article content
+  useEffect(() => {
+    if (!article?.url) return;
+    setContentLoading(true);
+    fetch('/api/article-content', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ url: article.url }),
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.content) setContent(data.content);
+        if (data.ogImage) setOgImage(data.ogImage);
+      })
+      .catch(() => {})
+      .finally(() => setContentLoading(false));
+  }, [article?.url]);
 
   if (isLoading) return <LoadingSpinner label="Loading article..." />;
 
@@ -40,7 +63,7 @@ export default function ArticleDetailPage() {
     );
   }
 
-  const config = CATEGORY_CONFIG[article.category];
+  const displayImage = article.imageURL || ogImage;
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-4">
@@ -56,7 +79,7 @@ export default function ArticleDetailPage() {
       </button>
 
       {/* Article header */}
-      <div className="mb-6">
+      <div className="mb-4">
         <div className="flex items-center gap-2 mb-2">
           <CategoryBadge category={article.category} size="md" />
           <span className="text-xs text-zinc-500 font-medium uppercase">
@@ -70,21 +93,15 @@ export default function ArticleDetailPage() {
         <h1 className="text-2xl font-bold text-zinc-900 dark:text-white leading-tight mb-3">
           {article.title}
         </h1>
-
-        {article.articleDescription && (
-          <p className="text-sm text-zinc-600 dark:text-zinc-300 leading-relaxed">
-            {article.articleDescription}
-          </p>
-        )}
       </div>
 
       {/* Image */}
-      {article.imageURL && (
+      {displayImage && (
         <div className="mb-6 rounded-xl overflow-hidden bg-zinc-100 dark:bg-zinc-800">
           <img
-            src={article.imageURL}
+            src={displayImage}
             alt={article.title}
-            className="w-full max-h-80 object-cover"
+            className="w-full max-h-96 object-cover"
             onError={(e) => {
               (e.target as HTMLImageElement).style.display = 'none';
             }}
@@ -92,20 +109,46 @@ export default function ArticleDetailPage() {
         </div>
       )}
 
-      {/* Read full article link */}
-      <a
-        href={article.url}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="inline-flex items-center gap-1.5 text-sm text-blue-500 hover:text-blue-600 font-medium mb-6"
-      >
-        Read full article
-        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
-          <polyline points="15 3 21 3 21 9" />
-          <line x1="10" y1="14" x2="21" y2="3" />
-        </svg>
-      </a>
+      {/* Article content */}
+      <div className="mb-6">
+        {contentLoading ? (
+          <div className="py-8">
+            <LoadingSpinner size="sm" label="Loading article content..." />
+          </div>
+        ) : content ? (
+          <div className="prose prose-zinc dark:prose-invert max-w-none">
+            {content.split('\n\n').map((paragraph, i) => (
+              <p
+                key={i}
+                className="text-[15px] text-zinc-700 dark:text-zinc-300 leading-relaxed mb-4"
+              >
+                {paragraph}
+              </p>
+            ))}
+          </div>
+        ) : article.articleDescription ? (
+          <p className="text-[15px] text-zinc-700 dark:text-zinc-300 leading-relaxed">
+            {article.articleDescription}
+          </p>
+        ) : null}
+      </div>
+
+      {/* Source link (secondary) */}
+      <div className="mb-6 flex items-center gap-3">
+        <a
+          href={article.url}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-1.5 text-xs text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 transition-colors"
+        >
+          View original on {article.sourceID}
+          <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+            <polyline points="15 3 21 3 21 9" />
+            <line x1="10" y1="14" x2="21" y2="3" />
+          </svg>
+        </a>
+      </div>
 
       {/* AI Action Buttons */}
       <div className="border-t border-zinc-200 dark:border-zinc-800 pt-4 mb-6">
@@ -116,17 +159,22 @@ export default function ArticleDetailPage() {
           <AIButton
             label="Summarize"
             loading={summaryLoading}
-            onClick={() => summarize(article)}
+            onClick={() => summarize({ ...article, content: content || undefined })}
           />
           <AIButton
             label="Bias Analysis"
             loading={analysisLoading}
-            onClick={() => analyze(article)}
+            onClick={() => analyze({ ...article, content: content || undefined })}
           />
           <AIButton
             label="Translate to Hebrew"
             loading={translateLoading}
-            onClick={() => translate(article.title + (article.articleDescription ? '\n' + article.articleDescription : ''), 'he')}
+            onClick={() =>
+              translate(
+                (content || article.title + '\n' + (article.articleDescription || '')),
+                'he'
+              )
+            }
           />
         </div>
       </div>
@@ -142,11 +190,12 @@ export default function ArticleDetailPage() {
 
       {analysis && (
         <AIResultCard title="Bias Analysis">
-          {/* Sentiment bar */}
           <div className="mb-3">
             <div className="flex justify-between text-xs text-zinc-500 mb-1">
               <span>Negative</span>
-              <span className="font-medium capitalize">{analysis.sentimentLabel}</span>
+              <span className="font-medium capitalize">
+                {analysis.sentimentLabel}
+              </span>
               <span>Positive</span>
             </div>
             <div className="h-2 bg-zinc-200 dark:bg-zinc-700 rounded-full overflow-hidden">
@@ -154,17 +203,17 @@ export default function ArticleDetailPage() {
                 className="h-full rounded-full transition-all"
                 style={{
                   width: `${((analysis.sentimentScore + 1) / 2) * 100}%`,
-                  background: analysis.sentimentScore > 0
-                    ? `rgb(34, 197, 94)`
-                    : analysis.sentimentScore < 0
-                    ? `rgb(239, 68, 68)`
-                    : `rgb(234, 179, 8)`,
+                  background:
+                    analysis.sentimentScore > 0
+                      ? 'rgb(34, 197, 94)'
+                      : analysis.sentimentScore < 0
+                      ? 'rgb(239, 68, 68)'
+                      : 'rgb(234, 179, 8)',
                 }}
               />
             </div>
           </div>
 
-          {/* Bias indicators */}
           {analysis.biasIndicators?.length > 0 && (
             <div className="flex flex-wrap gap-1.5 mb-2">
               {analysis.biasIndicators.map((indicator, i) => (

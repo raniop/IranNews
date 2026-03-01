@@ -80,12 +80,12 @@ function parseStructured(html: string, config: ScrapingConfig, source: NewsSourc
         }
       }
 
-      // Extract image
+      // Extract image - try multiple attributes
       let imageURL: string | undefined;
       if (config.imageSelector) {
-        const imgSrc = $el.find(config.imageSelector).first().attr('src') ||
-                        $el.find(config.imageSelector).first().attr('data-src');
-        if (imgSrc) {
+        const $img = $el.find(config.imageSelector).first();
+        const imgSrc = $img.attr('src') || $img.attr('data-src') || $img.attr('data-lazy-src') || $img.attr('data-original');
+        if (imgSrc && !imgSrc.includes('data:image') && !imgSrc.includes('blank.gif')) {
           imageURL = resolveURL(imgSrc, config.baseURLForRelativeLinks);
         }
       }
