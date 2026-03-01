@@ -15,13 +15,17 @@ export const SUPABASE_ANON_KEY = 'sb_publishable_Usltmj6DeTXB2fENaq03Fg_JydDelVZ
 export const CACHE_REVALIDATE_SECONDS = 300; // 5 minutes
 export const MAX_ARTICLES_PER_SOURCE = 100;
 
-// Iran keywords for filtering RSS feeds (Al Jazeera, BBC)
+// Iran keywords for filtering RSS feeds (Al Jazeera, BBC, ToI, Ynetnews, Walla)
 export const IRAN_KEYWORDS = [
   'iran', 'iranian', 'tehran', 'persian',
   'khamenei', 'raisi', 'rouhani',
   'irgc', 'revolutionary guard',
   'sanctions', 'nuclear',
   'ayatollah', 'islamic republic',
+  // Hebrew keywords for Israeli sources
+  'איראן', 'אירנ', 'טהרן', 'חמנאי',
+  'משמרות המהפכה', 'גרעין', 'סנקציות',
+  'איסלאמית', 'פרסית', 'בליסטי', 'טיל',
 ];
 
 // Generic titles to filter out from scraped content

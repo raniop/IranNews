@@ -5,7 +5,8 @@ import { fetchScrapedArticles } from './web-scraper';
 import { fetchJSONAPIArticles } from './json-api-feed';
 import { fetchTelegramArticles } from './telegram-scraper';
 
-const IRAN_FILTER_SOURCES = new Set(['aljazeera', 'bbc']);
+// Sources with general feeds that need Iran keyword filtering
+const IRAN_FILTER_SOURCES = new Set(['aljazeera', 'bbc', 'timesofisrael', 'ynetnews', 'walla']);
 
 export async function fetchAllSources(
   sourcesToFetch?: NewsSource[]

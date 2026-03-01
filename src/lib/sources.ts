@@ -226,9 +226,179 @@ export const neutralSources: NewsSource[] = [
     isEnabled: true,
     fetchMethod: 'rss',
   },
+  // NPR - Middle East coverage
+  {
+    id: 'npr',
+    name: 'NPR',
+    category: 'neutral',
+    baseURL: 'https://www.npr.org',
+    rssURL: 'https://news.google.com/rss/search?q=iran+site:npr.org&hl=en-US&gl=US&ceid=US:en',
+    isEnabled: true,
+    fetchMethod: 'rss',
+  },
+  // TRT World - Turkish international broadcaster
+  {
+    id: 'trtworld',
+    name: 'TRT World',
+    category: 'neutral',
+    baseURL: 'https://www.trtworld.com',
+    rssURL: 'https://news.google.com/rss/search?q=iran+site:trtworld.com&hl=en-US&gl=US&ceid=US:en',
+    isEnabled: true,
+    fetchMethod: 'rss',
+  },
+  // AP News - wire service
+  {
+    id: 'apnews',
+    name: 'AP News',
+    category: 'neutral',
+    baseURL: 'https://apnews.com',
+    rssURL: 'https://news.google.com/rss/search?q=iran+site:apnews.com&hl=en-US&gl=US&ceid=US:en',
+    isEnabled: true,
+    fetchMethod: 'rss',
+  },
+  // CNN - World news
+  {
+    id: 'cnn',
+    name: 'CNN',
+    category: 'neutral',
+    baseURL: 'https://www.cnn.com',
+    rssURL: 'https://news.google.com/rss/search?q=iran+site:cnn.com&hl=en-US&gl=US&ceid=US:en',
+    isEnabled: true,
+    fetchMethod: 'rss',
+  },
+  // Fox News - World news
+  {
+    id: 'foxnews',
+    name: 'Fox News',
+    category: 'neutral',
+    baseURL: 'https://www.foxnews.com',
+    rssURL: 'https://news.google.com/rss/search?q=iran+site:foxnews.com&hl=en-US&gl=US&ceid=US:en',
+    isEnabled: true,
+    fetchMethod: 'rss',
+  },
+  // Economic Times - India perspective on Iran/missiles/defense
+  {
+    id: 'economictimes',
+    name: 'Economic Times',
+    category: 'neutral',
+    baseURL: 'https://economictimes.indiatimes.com',
+    rssURL: 'https://news.google.com/rss/search?q=iran+site:economictimes.indiatimes.com&hl=en-US&gl=US&ceid=US:en',
+    isEnabled: true,
+    fetchMethod: 'rss',
+  },
+  // Iran Watch - Wisconsin Project think tank, nuclear/missile tracking
+  {
+    id: 'iranwatch',
+    name: 'Iran Watch',
+    category: 'neutral',
+    baseURL: 'https://www.iranwatch.org',
+    rssURL: 'https://news.google.com/rss/search?q=site:iranwatch.org&hl=en-US&gl=US&ceid=US:en',
+    scrapingConfig: {
+      articleSelector: 'div.view-content div.views-row, article',
+      titleSelector: 'h2 a, h3 a, a',
+      linkSelector: 'a',
+      descriptionSelector: 'p, div.field-content',
+      imageSelector: 'img',
+      dateSelector: 'span.date-display-single, time',
+      baseURLForRelativeLinks: 'https://www.iranwatch.org',
+    },
+    isEnabled: true,
+    fetchMethod: 'rss',
+  },
+  // Israel Alma Center - Israeli research center, Iran/Hezbollah analysis
+  {
+    id: 'alma',
+    name: 'Alma Center',
+    category: 'neutral',
+    baseURL: 'https://israel-alma.org',
+    rssURL: 'https://israel-alma.org/feed/',
+    isEnabled: true,
+    fetchMethod: 'rss',
+  },
+  // Critical Threats (AEI) - daily Iran updates and analysis
+  {
+    id: 'criticalthreats',
+    name: 'Critical Threats',
+    category: 'neutral',
+    baseURL: 'https://www.criticalthreats.org',
+    rssURL: 'https://news.google.com/rss/search?q=iran+site:criticalthreats.org&hl=en-US&gl=US&ceid=US:en',
+    isEnabled: true,
+    fetchMethod: 'rss',
+  },
+  // Understanding War / ISW Iran analysis
+  {
+    id: 'isw',
+    name: 'ISW',
+    category: 'neutral',
+    baseURL: 'https://understandingwar.org',
+    rssURL: 'https://news.google.com/rss/search?q=iran+site:understandingwar.org&hl=en-US&gl=US&ceid=US:en',
+    isEnabled: true,
+    fetchMethod: 'rss',
+  },
+  // Jerusalem Post - dedicated Iran RSS feed
+  {
+    id: 'jpost',
+    name: 'Jerusalem Post',
+    category: 'neutral',
+    baseURL: 'https://www.jpost.com',
+    rssURL: 'https://www.jpost.com/rss/rssfeedsiran',
+    isEnabled: true,
+    fetchMethod: 'rss',
+  },
+  // Times of Israel - main RSS, needs Iran filter
+  {
+    id: 'timesofisrael',
+    name: 'Times of Israel',
+    category: 'neutral',
+    baseURL: 'https://www.timesofisrael.com',
+    rssURL: 'https://www.timesofisrael.com/feed/',
+    isEnabled: true,
+    fetchMethod: 'rss',
+  },
+  // Ynetnews - English edition of Ynet
+  {
+    id: 'ynetnews',
+    name: 'Ynetnews',
+    category: 'neutral',
+    baseURL: 'https://www.ynetnews.com',
+    rssURL: 'https://www.ynet.co.il/3rdparty/mobile/rss/ynetnews/3082/',
+    isEnabled: true,
+    fetchMethod: 'rss',
+  },
+  // i24News - Israeli international news channel
+  {
+    id: 'i24news',
+    name: 'i24NEWS',
+    category: 'neutral',
+    baseURL: 'https://www.i24news.tv/en',
+    rssURL: 'https://news.google.com/rss/search?q=iran+site:i24news.tv&hl=en-US&gl=US&ceid=US:en',
+    isEnabled: true,
+    fetchMethod: 'rss',
+  },
+  // Israel Hayom - English edition
+  {
+    id: 'israelhayom',
+    name: 'Israel Hayom',
+    category: 'neutral',
+    baseURL: 'https://www.israelhayom.com',
+    rssURL: 'https://news.google.com/rss/search?q=iran+site:israelhayom.com&hl=en-US&gl=US&ceid=US:en',
+    isEnabled: true,
+    fetchMethod: 'rss',
+  },
+  // Walla! News - major Israeli news portal (Hebrew, via Google News)
+  {
+    id: 'walla',
+    name: 'Walla! News',
+    category: 'neutral',
+    baseURL: 'https://news.walla.co.il',
+    rssURL: 'https://news.google.com/rss/search?q=iran+site:walla.co.il&hl=iw&gl=IL&ceid=IL:he',
+    isEnabled: true,
+    fetchMethod: 'rss',
+  },
 ];
 
 export const telegramSources: NewsSource[] = [
+  // Pro-regime Telegram channels
   {
     id: 'presstv',
     name: 'Press TV',
@@ -250,6 +420,48 @@ export const telegramSources: NewsSource[] = [
     name: 'Fars News',
     category: 'telegram',
     baseURL: 'https://t.me/s/farsna',
+    isEnabled: true,
+    fetchMethod: 'telegram',
+  },
+  // Israeli & Hebrew breaking news Telegram channels
+  {
+    id: 'tg_breakingnews',
+    name: 'Breaking News TG',
+    category: 'telegram',
+    baseURL: 'https://t.me/s/news_is_breaking_out_telegram',
+    isEnabled: true,
+    fetchMethod: 'telegram',
+  },
+  {
+    id: 'tg_newsflash',
+    name: 'News Flash TG',
+    category: 'telegram',
+    baseURL: 'https://t.me/s/newsflashhhj',
+    isEnabled: true,
+    fetchMethod: 'telegram',
+  },
+  {
+    id: 'tg_yediotnews',
+    name: 'Yedioth News TG',
+    category: 'telegram',
+    baseURL: 'https://t.me/s/yediotnews25',
+    isEnabled: true,
+    fetchMethod: 'telegram',
+  },
+  // OSINT / Military intelligence channels
+  {
+    id: 'tg_abuali',
+    name: 'Abu Ali Express',
+    category: 'telegram',
+    baseURL: 'https://t.me/s/AbuAliExpress',
+    isEnabled: true,
+    fetchMethod: 'telegram',
+  },
+  {
+    id: 'tg_inteldoge',
+    name: 'Intel Doge',
+    category: 'telegram',
+    baseURL: 'https://t.me/s/IntelDoge',
     isEnabled: true,
     fetchMethod: 'telegram',
   },
