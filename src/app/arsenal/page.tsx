@@ -2,7 +2,7 @@
 
 import { useArsenal } from '@/hooks/useArsenal';
 import { useLanguage } from '@/hooks/useLanguage';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 
 /* ═══════════════════════════════════════════════════════
    Exact color tokens from iranrocketsarsenal.com
@@ -42,6 +42,80 @@ const CHANNELS = [
 const INTEL_FEED = [
   { source: 'Breaking News', time: '17:50:03', text: '\u05d8\u05e8\u05d0\u05de\u05e4: \u05d4\u05de\u05d1\u05e6\u05e2 \u05d1\u05d0\u05d9\u05e8\u05d0\u05df \u05de\u05ea\u05e7\u05d3\u05dd \u05de\u05d4\u05e8 \u05d9\u05d5\u05ea\u05e8 \u05de\u05d4\u05ea\u05d5\u05db\u05e0\u05d9\u05ea' },
   { source: 'Yedioth News', time: '17:50:02', text: '\u05d8\u05e8\u05d0\u05de\u05e4: \u05d4\u05de\u05d1\u05e6\u05e2 \u05d1\u05d0\u05d9\u05e8\u05d0\u05df \u05de\u05ea\u05e7\u05d3\u05dd \u05de\u05d4\u05e8 \u05d9\u05d5\u05ea\u05e8 \u05de\u05d4\u05ea\u05d5\u05db\u05e0\u05d9\u05ea' },
+];
+
+/* ═══════════════════════════════════════════════════════
+   Geographic data extracted from iranrocketsarsenal.com
+   Real [longitude, latitude] coordinates for each country
+   ═══════════════════════════════════════════════════════ */
+const GEO = {
+  iran: [[44,39.5],[45,39.2],[46.5,38.9],[47.8,38.5],[48.5,38.4],[50.1,37.4],[52.7,37.2],[54,37.6],[55.6,37.2],[56.4,36.5],[58,37.4],[59.6,37.2],[60.5,36.5],[61.2,35.6],[61.7,34.3],[60.8,33],[60.6,31.4],[61.4,29.9],[62.2,29.2],[62.6,26.6],[61.9,25.1],[58.5,25.6],[57.4,25.8],[56.9,27.1],[56.4,27.2],[55.7,26.2],[54.9,26.6],[54.4,25.7],[52.5,27],[51,27.8],[50.1,29.1],[49,30.2],[48,30],[47.2,30.7],[46.5,30.9],[45.4,31],[45,32],[44.2,33],[43.9,34],[44.5,35],[44.8,36],[44.3,37.1],[44,38],[44,39.5]],
+  iraq: [[38.8,33.4],[39.2,32.2],[40,31.8],[41,31],[42,30.5],[43,30],[44.7,29.5],[46.4,29.1],[47.1,30],[47.4,31],[47.7,31.9],[47.8,33],[46.1,33.5],[45.5,34],[45,35],[44.8,36],[44.3,37.1],[43,37.4],[41.2,37.1],[40.7,36.3],[39.9,35.5],[39.1,34.3],[38.8,33.4]],
+  syria: [[35.7,36.8],[36.6,36.5],[37.1,36.7],[38,36.9],[38.8,36.7],[40,36.8],[41.2,37.1],[42.4,37.1],[42.8,37.4],[41,37.6],[40,37],[39,36.7],[38.5,36],[37.5,35.5],[36.6,35.2],[36,35],[35.7,35.5],[35.7,36.8]],
+  turkey: [[26,41.5],[28,41],[30,41],[32,41.5],[34,42],[36,42],[38,37.5],[40,38],[42,39],[44,39.5],[44.8,38],[43.5,37],[42,37.1],[41.2,37.1],[40,36.8],[38.8,36.7],[37,36.5],[36,36],[35.5,36.5],[35,37],[34,37],[32,36.5],[30,36],[28,36.5],[26.5,38],[26,39.5],[26,41.5]],
+  saudi: [[36.9,29.2],[38,28],[39,27.5],[40,26.5],[42,25],[44,24],[46.5,24.1],[48.5,23.5],[50.5,24],[52,23],[55,22],[56,22.5],[57,21],[58,20],[58.5,18],[57.5,16.5],[55.5,15.5],[53,16.5],[51,18],[49,18.5],[46.5,17],[44,17.5],[43,17],[42.5,17.5],[41.5,19],[40.5,20],[39.5,21],[38.5,22],[37.5,23],[37,24.5],[37.5,26],[37,27],[36.9,29.2]],
+  israel: [[34.5,33.1],[35,33.3],[35.7,33.1],[35.9,32.7],[35.6,32],[35.5,31.5],[35,31],[34.5,31.3],[34.3,31.6],[34.5,32],[34.5,33.1]],
+  egypt: [[25,22],[34,22],[34.9,29.5],[34.5,31],[33,31.5],[32,31],[30,31.2],[28,30.8],[25,30],[25,22]],
+  jordan: [[34.9,29.5],[36,29.2],[37,29.5],[38,30],[39,32],[38.5,32.5],[37,31.5],[36,31],[35.5,31.5],[35,31],[34.9,29.5]],
+  lebanon: [[35.1,33.1],[35.7,33.1],[36.6,34.2],[36.4,34.7],[35.9,34.7],[35.1,33.9],[35.1,33.1]],
+  uae: [[51.5,24],[54,24.5],[55.5,25],[56.5,24.5],[57,23.5],[58.5,23],[59.5,22],[58,21],[56,22],[54,23],[52,23],[51.5,24]],
+  kuwait: [[46.5,29.1],[47.5,29],[48,29.5],[48,30],[47.1,30],[46.5,29.1]],
+  afghanistan: [[61,35.6],[62.5,35.2],[63,35.9],[64.5,36.3],[66.5,37.4],[68,37],[69,37.5],[70.5,38],[71.5,37.9],[72,37],[71,36],[70,34.5],[69.5,33.5],[68,32],[66.5,31],[65,29.5],[63.5,29.5],[62,29.2],[61,29.5],[60.5,30],[60.5,31.5],[61,32.5],[61,35.6]],
+  pakistan: [[62,29.2],[63.5,29.5],[65,29.5],[66.5,31],[68,32],[69.5,33.5],[70,34.5],[71,36],[72,37],[73,36.5],[74,37],[75,37.5],[76,35.5],[74.5,34],[73,31.5],[72,30],[71,28.5],[70,27.5],[68.5,26],[67,24.5],[66,23.5],[64.5,23],[63,25],[62,26.5],[62,29.2]],
+};
+
+/* Projection: [lon, lat] → [svgX, svgY] in 800×480 viewBox */
+const P = { minLon: 24, maxLon: 76, minLat: 14, maxLat: 43 };
+function gp(lon: number, lat: number): [number, number] {
+  return [
+    ((lon - P.minLon) / (P.maxLon - P.minLon)) * 800,
+    ((P.maxLat - lat) / (P.maxLat - P.minLat)) * 480,
+  ];
+}
+function toSvgPath(coords: number[][]): string {
+  return coords.map((c, i) => {
+    const [x, y] = gp(c[0], c[1]);
+    return `${i === 0 ? 'M' : 'L'}${x.toFixed(1)},${y.toFixed(1)}`;
+  }).join(' ') + ' Z';
+}
+function makeArc(f: number[], t: number[], bulge: number): string {
+  const mx = (f[0] + t[0]) / 2, my = (f[1] + t[1]) / 2;
+  const dx = t[0] - f[0], dy = t[1] - f[1];
+  const len = Math.sqrt(dx * dx + dy * dy) || 1;
+  const cx = mx + (-dy / len) * bulge, cy = my + (dx / len) * bulge;
+  return `M ${f[0].toFixed(0)},${f[1].toFixed(0)} Q ${cx.toFixed(0)},${cy.toFixed(0)} ${t[0].toFixed(0)},${t[1].toFixed(0)}`;
+}
+
+/* Country rendering config */
+const COUNTRY_STYLES: { key: keyof typeof GEO; fill: string; stroke: string; sw: number }[] = [
+  { key: 'turkey', fill: 'rgba(80,120,80,0.12)', stroke: 'rgba(100,140,100,0.3)', sw: 1 },
+  { key: 'iran', fill: 'rgba(220,38,38,0.15)', stroke: 'rgba(220,38,38,0.5)', sw: 1.5 },
+  { key: 'iraq', fill: 'rgba(120,80,60,0.1)', stroke: 'rgba(140,100,70,0.25)', sw: 0.8 },
+  { key: 'syria', fill: 'rgba(120,100,80,0.08)', stroke: 'rgba(140,120,90,0.2)', sw: 0.7 },
+  { key: 'saudi', fill: 'rgba(100,90,70,0.06)', stroke: 'rgba(120,110,80,0.15)', sw: 0.7 },
+  { key: 'israel', fill: 'rgba(96,165,250,0.12)', stroke: 'rgba(96,165,250,0.35)', sw: 1 },
+  { key: 'egypt', fill: 'rgba(120,110,80,0.06)', stroke: 'rgba(140,130,90,0.15)', sw: 0.7 },
+  { key: 'jordan', fill: 'rgba(120,100,80,0.06)', stroke: 'rgba(140,120,90,0.15)', sw: 0.6 },
+  { key: 'lebanon', fill: 'rgba(120,100,80,0.08)', stroke: 'rgba(140,120,90,0.2)', sw: 0.6 },
+  { key: 'uae', fill: 'rgba(80,160,120,0.08)', stroke: 'rgba(100,180,140,0.2)', sw: 0.7 },
+  { key: 'kuwait', fill: 'rgba(80,160,120,0.06)', stroke: 'rgba(100,180,140,0.15)', sw: 0.5 },
+  { key: 'afghanistan', fill: 'rgba(100,90,70,0.04)', stroke: 'rgba(120,110,80,0.1)', sw: 0.5 },
+  { key: 'pakistan', fill: 'rgba(100,90,70,0.04)', stroke: 'rgba(120,110,80,0.1)', sw: 0.5 },
+];
+
+/* City data with real geographic coordinates */
+const CITY_DATA = [
+  { name: 'Tehran', lon: 51.39, lat: 35.69, color: '#ef4444', sz: 6, ring: true, bold: true, fs: 12, dx: 5, dy: -15 },
+  { name: 'Tel Aviv', lon: 34.79, lat: 32.07, color: '#3b82f6', sz: 5, ring: true, bold: true, fs: 11, dx: -25, dy: 22 },
+  { name: 'Beirut', lon: 35.50, lat: 33.89, color: '#d97706', sz: 4, ring: false, bold: true, fs: 10, dx: -40, dy: -5 },
+  { name: 'Baghdad', lon: 44.37, lat: 33.31, color: '#d97706', sz: 4, ring: false, bold: true, fs: 10, dx: 5, dy: -10 },
+  { name: 'Incirlik', lon: 35.43, lat: 37.00, color: '#16a34a', sz: 4, ring: true, bold: true, fs: 10, dx: -50, dy: -7 },
+  { name: 'Al Udeid', lon: 51.31, lat: 25.12, color: '#16a34a', sz: 4, ring: true, bold: true, fs: 10, dx: -55, dy: -5 },
+  { name: 'Cairo', lon: 31.24, lat: 30.04, color: '#d97706', sz: 3.5, ring: false, bold: false, fs: 10, dx: -35, dy: -5 },
+  { name: 'Riyadh', lon: 46.68, lat: 24.71, color: '#d97706', sz: 3.5, ring: false, bold: false, fs: 10, dx: -15, dy: 15 },
+  { name: 'Dubai', lon: 55.27, lat: 25.20, color: '#16a34a', sz: 4, ring: true, bold: true, fs: 10, dx: 15, dy: 5 },
+  { name: 'Isfahan', lon: 51.68, lat: 32.65, color: '#ef4444', sz: 3, ring: false, bold: false, fs: 9, dx: 10, dy: 10 },
+  { name: 'B.Abbas', lon: 56.27, lat: 27.18, color: '#ef4444', sz: 3, ring: false, bold: false, fs: 9, dx: 15, dy: 5 },
 ];
 
 export default function ArsenalPage() {
@@ -444,31 +518,63 @@ function StatusRow({ label, value, active }: { label: string; value: string; act
 }
 
 /* ═══════════════════════════════════════════
-   Threat Map visualization — SVG with animated arcs
+   Threat Map — Real geographic coordinates
+   projected to SVG with CSS + SMIL animations
    ═══════════════════════════════════════════ */
 function ThreatMap() {
-  /* Threat arcs: Iran → targets */
-  const threatArcs = [
-    { id: 'ir-il-1', path: 'M 590,200 Q 440,110 240,250', dur: '3s', delay: '0s', w: 2.5 },
-    { id: 'ir-il-2', path: 'M 580,215 Q 420,130 235,255', dur: '3.5s', delay: '0.5s', w: 2 },
-    { id: 'ir-il-3', path: 'M 575,210 Q 460,90 245,245', dur: '4s', delay: '1s', w: 1.5 },
-    { id: 'ir-qa', path: 'M 610,250 Q 570,340 530,380', dur: '2.5s', delay: '0.3s', w: 2 },
-    { id: 'ir-kw', path: 'M 580,240 Q 500,310 420,355', dur: '3s', delay: '0.7s', w: 1.5 },
-    { id: 'ir-in', path: 'M 560,175 Q 470,100 310,90', dur: '3.2s', delay: '1.2s', w: 1.5 },
-    { id: 'ir-dub', path: 'M 625,260 Q 630,340 640,380', dur: '2.8s', delay: '1.5s', w: 1 },
-  ];
+  /* Pre-compute projected city positions and arcs */
+  const mapData = useMemo(() => {
+    const cities = CITY_DATA.map(c => ({ ...c, cx: gp(c.lon, c.lat)[0], cy: gp(c.lon, c.lat)[1] }));
+    const tehranPt = gp(51.39, 35.69);
+    const telavivPt = gp(34.79, 32.07);
+    const aludeidPt = gp(51.31, 25.12);
+    const riyadhPt = gp(46.68, 24.71);
+    const incirlikPt = gp(35.43, 37.00);
+    const dubaiPt = gp(55.27, 25.20);
 
-  const interceptArcs = [
-    { id: 'int-1', path: 'M 245,248 Q 320,170 430,160', dur: '2s', delay: '0.2s' },
-    { id: 'int-2', path: 'M 240,255 Q 290,190 380,175', dur: '2.5s', delay: '0.8s' },
-    { id: 'int-3', path: 'M 248,243 Q 350,140 450,145', dur: '2.2s', delay: '1.5s' },
-    { id: 'int-4', path: 'M 242,250 Q 360,160 480,165', dur: '2.8s', delay: '2.0s' },
-    { id: 'int-5', path: 'M 246,252 Q 300,200 400,180', dur: '2.3s', delay: '2.5s' },
-  ];
+    const threatArcs = [
+      { id: 'ir-il-1', path: makeArc(tehranPt, telavivPt, -80), dur: '3s', delay: '0s', w: 2.5 },
+      { id: 'ir-il-2', path: makeArc(tehranPt, telavivPt, -50), dur: '3.5s', delay: '0.5s', w: 2 },
+      { id: 'ir-il-3', path: makeArc(tehranPt, telavivPt, -120), dur: '4s', delay: '1s', w: 1.5 },
+      { id: 'ir-qa', path: makeArc(tehranPt, aludeidPt, 40), dur: '2.5s', delay: '0.3s', w: 2 },
+      { id: 'ir-riy', path: makeArc(tehranPt, riyadhPt, -30), dur: '3s', delay: '0.7s', w: 1.5 },
+      { id: 'ir-in', path: makeArc(tehranPt, incirlikPt, -60), dur: '3.2s', delay: '1.2s', w: 1.5 },
+      { id: 'ir-dub', path: makeArc(tehranPt, dubaiPt, 50), dur: '2.8s', delay: '1.5s', w: 1 },
+    ];
+
+    const interceptArcs = [
+      { id: 'int-1', path: makeArc(telavivPt, [tehranPt[0] - 60, tehranPt[1] + 20], -40), dur: '2s', delay: '0.2s' },
+      { id: 'int-2', path: makeArc(telavivPt, [tehranPt[0] - 100, tehranPt[1] + 10], -25), dur: '2.5s', delay: '0.8s' },
+      { id: 'int-3', path: makeArc(telavivPt, [tehranPt[0] - 30, tehranPt[1] - 10], -50), dur: '2.2s', delay: '1.5s' },
+      { id: 'int-4', path: makeArc(telavivPt, [tehranPt[0] + 10, tehranPt[1] + 5], -35), dur: '2.8s', delay: '2.0s' },
+      { id: 'int-5', path: makeArc(telavivPt, [tehranPt[0] - 80, tehranPt[1] + 30], -20), dur: '2.3s', delay: '2.5s' },
+    ];
+
+    /* Center of Iran for glow */
+    const iranCenter = gp(53, 32);
+    const israelCenter = gp(34.8, 32);
+
+    return { cities, threatArcs, interceptArcs, tehranPt, telavivPt, iranCenter, israelCenter };
+  }, []);
+
+  const { cities, threatArcs, interceptArcs, tehranPt, telavivPt, iranCenter, israelCenter } = mapData;
+
+  /* Coordinate labels at projected positions */
+  const latLabels = [40, 30, 24, 18].map(lat => ({ lat, y: gp(24, lat)[1] }));
+  const lonLabels = [30, 40, 50, 60, 70].map(lon => ({ lon, x: gp(lon, 14)[0] }));
 
   return (
     <div className="p-4 h-full min-h-[420px] relative overflow-hidden bg-slate-100 dark:bg-[#060b14]" style={{ borderRadius: 'inherit' }}>
-      {/* Background radial glow - much brighter */}
+      {/* CSS animations */}
+      <style>{`
+        @keyframes dash-red { to { stroke-dashoffset: -28; } }
+        @keyframes dash-blue { to { stroke-dashoffset: 24; } }
+        @keyframes pulse-glow { 0%,100% { opacity: 0.6; } 50% { opacity: 1; } }
+        @keyframes pulse-glow2 { 0%,100% { opacity: 0.5; } 50% { opacity: 1; } }
+        @keyframes intercept-dot { 0%,100% { opacity: 0.4; } 50% { opacity: 0.9; } }
+      `}</style>
+
+      {/* Background radial glow */}
       <div className="absolute inset-0 opacity-0 dark:opacity-60" style={{
         background: 'radial-gradient(ellipse 55% 50% at 62% 42%, rgba(220,38,38,0.25) 0%, transparent 65%)',
       }} />
@@ -496,7 +602,7 @@ function ThreatMap() {
         </div>
       </div>
 
-      {/* SVG map - zoomed in tighter */}
+      {/* SVG map */}
       <div className="relative w-full h-[390px]">
         <svg viewBox="0 0 800 480" className="w-full h-full" xmlns="http://www.w3.org/2000/svg">
           <defs>
@@ -529,63 +635,24 @@ function ThreatMap() {
 
           <rect width="800" height="480" fill="url(#grid)" />
 
-          {/* ═══ Country shapes (approximate geography, zoomed to Middle East) ═══ */}
-          {/* Turkey */}
-          <path d="M 160,30 L 220,20 280,15 340,20 380,40 350,55 310,52 280,58 260,65 230,75 200,70 170,55 155,45 Z"
-            fill="rgba(80,120,80,0.12)" stroke="rgba(100,140,100,0.3)" strokeWidth="1" />
-          <path d="M 380,40 L 420,30 460,25 500,35 520,50 490,65 450,70 420,60 390,55 380,40 Z"
-            fill="rgba(80,120,80,0.1)" stroke="rgba(100,140,100,0.25)" strokeWidth="0.8" />
+          {/* ═══ Country shapes — real geographic coordinates ═══ */}
+          {COUNTRY_STYLES.map(cs => (
+            <path key={cs.key} d={toSvgPath(GEO[cs.key])} fill={cs.fill} stroke={cs.stroke} strokeWidth={cs.sw} />
+          ))}
 
-          {/* Iran — BIG RED prominent fill */}
-          <path d="M 500,70 L 540,55 590,50 650,65 700,90 740,120 755,170 760,220 740,270 710,300 670,320 630,310 600,290 560,300 520,290 490,270 470,240 460,200 465,160 475,120 490,90 Z"
-            fill="rgba(220,38,38,0.15)" stroke="rgba(220,38,38,0.5)" strokeWidth="1.5" />
-
-          {/* Iraq */}
-          <path d="M 370,70 L 420,60 465,75 490,90 475,120 465,160 460,200 445,220 420,240 390,250 360,235 345,210 340,180 345,150 350,120 355,95 Z"
-            fill="rgba(120,80,60,0.1)" stroke="rgba(140,100,70,0.25)" strokeWidth="0.8" />
-
-          {/* Syria / Lebanon */}
-          <path d="M 265,75 L 300,65 340,70 355,95 350,120 340,140 310,150 280,145 260,130 250,105 255,85 Z"
-            fill="rgba(120,100,80,0.08)" stroke="rgba(140,120,90,0.2)" strokeWidth="0.7" />
-
-          {/* Israel / Palestine — blue tint */}
-          <path d="M 230,160 L 248,150 260,165 258,195 255,220 248,240 235,250 225,235 220,210 222,185 225,170 Z"
-            fill="rgba(96,165,250,0.12)" stroke="rgba(96,165,250,0.35)" strokeWidth="1" />
-
-          {/* Egypt */}
-          <path d="M 80,200 L 130,170 175,165 210,175 220,210 225,250 220,300 200,360 160,400 110,410 70,380 50,330 45,280 55,240 Z"
-            fill="rgba(120,110,80,0.06)" stroke="rgba(140,130,90,0.15)" strokeWidth="0.7" />
-
-          {/* Saudi Arabia — large */}
-          <path d="M 255,260 L 310,240 370,250 420,260 470,260 520,300 560,320 580,360 570,400 530,430 470,450 400,445 330,420 280,390 260,350 250,310 Z"
-            fill="rgba(100,90,70,0.06)" stroke="rgba(120,110,80,0.15)" strokeWidth="0.7" />
-
-          {/* UAE / Qatar / Bahrain area */}
-          <path d="M 570,340 L 620,330 660,340 670,365 655,390 620,395 585,380 575,360 Z"
-            fill="rgba(80,160,120,0.08)" stroke="rgba(100,180,140,0.2)" strokeWidth="0.7" />
-
-          {/* Yemen */}
-          <path d="M 350,430 L 420,450 480,455 520,445 540,430 530,460 480,475 400,475 340,460 Z"
-            fill="rgba(100,90,70,0.04)" stroke="rgba(120,110,80,0.1)" strokeWidth="0.5" />
-
-          {/* Territory glow zones — brighter */}
-          <ellipse cx="610" cy="200" rx="140" ry="110" fill="url(#iran-glow)">
-            <animate attributeName="opacity" values="0.6;1;0.6" dur="4s" repeatCount="indefinite" />
+          {/* Territory glow zones */}
+          <ellipse cx={iranCenter[0]} cy={iranCenter[1]} rx={140} ry={110} fill="url(#iran-glow)" style={{ animation: 'pulse-glow 4s ease-in-out infinite' }} />
+          <ellipse cx={iranCenter[0]} cy={iranCenter[1]} rx={80} ry={60} fill="none" stroke="rgba(220,38,38,0.2)" strokeWidth="1.2" strokeDasharray="4 8">
+            <animate attributeName="stroke-dashoffset" values="0;24" dur="8s" repeatCount="indefinite" />
           </ellipse>
-          <ellipse cx="610" cy="200" rx="80" ry="60" fill="none" stroke="rgba(220,38,38,0.2)" strokeWidth="1.2" strokeDasharray="4 8">
-            <animate attributeName="strokeDashoffset" values="0;24" dur="8s" repeatCount="indefinite" />
-          </ellipse>
-          <ellipse cx="245" cy="240" rx="40" ry="35" fill="url(#israel-glow)">
-            <animate attributeName="opacity" values="0.5;1;0.5" dur="3s" repeatCount="indefinite" />
-          </ellipse>
+          <ellipse cx={israelCenter[0]} cy={israelCenter[1]} rx={40} ry={35} fill="url(#israel-glow)" style={{ animation: 'pulse-glow2 3s ease-in-out infinite' }} />
 
-          {/* ═══ Threat arcs (red) — brighter ═══ */}
+          {/* ═══ Threat arcs (red) ═══ */}
           {threatArcs.map((arc) => (
             <g key={arc.id}>
               <path d={arc.path} fill="none" stroke="rgba(239,68,68,0.2)" strokeWidth={arc.w + 6} filter="url(#glow-r)" />
-              <path d={arc.path} fill="none" stroke="rgba(239,68,68,0.65)" strokeWidth={arc.w} strokeDasharray="8 6" strokeLinecap="round">
-                <animate attributeName="strokeDashoffset" values="0;-28" dur={arc.dur} repeatCount="indefinite" />
-              </path>
+              <path d={arc.path} fill="none" stroke="rgba(239,68,68,0.65)" strokeWidth={arc.w} strokeDasharray="8 6" strokeLinecap="round"
+                style={{ animation: `dash-red ${arc.dur} linear infinite` }} />
               <circle r="4" fill="#ef4444" filter="url(#glow-r)" opacity="0.95">
                 <animateMotion dur={arc.dur} begin={arc.delay} repeatCount="indefinite" path={arc.path} />
               </circle>
@@ -595,13 +662,12 @@ function ThreatMap() {
             </g>
           ))}
 
-          {/* ═══ Intercept arcs (blue) — brighter, more of them ═══ */}
+          {/* ═══ Intercept arcs (blue) ═══ */}
           {interceptArcs.map((arc) => (
             <g key={arc.id}>
               <path d={arc.path} fill="none" stroke="rgba(96,165,250,0.18)" strokeWidth="6" filter="url(#glow-b)" />
-              <path d={arc.path} fill="none" stroke="rgba(96,165,250,0.55)" strokeWidth="1.8" strokeDasharray="4 8" strokeLinecap="round">
-                <animate attributeName="strokeDashoffset" values="0;24" dur={arc.dur} repeatCount="indefinite" />
-              </path>
+              <path d={arc.path} fill="none" stroke="rgba(96,165,250,0.55)" strokeWidth="1.8" strokeDasharray="4 8" strokeLinecap="round"
+                style={{ animation: `dash-blue ${arc.dur} linear infinite` }} />
               <circle r="3" fill="#60a5fa" filter="url(#glow-b)" opacity="0.9">
                 <animateMotion dur={arc.dur} begin={arc.delay} repeatCount="indefinite" path={arc.path} />
               </circle>
@@ -612,102 +678,56 @@ function ThreatMap() {
           ))}
 
           {/* Impact flashes */}
-          <circle cx="245" cy="248" r="0" fill="rgba(239,68,68,0.7)" filter="url(#glow-r)">
+          <circle cx={telavivPt[0]} cy={telavivPt[1]} r="0" fill="rgba(239,68,68,0.7)" filter="url(#glow-r)">
             <animate attributeName="r" values="0;12;0" dur="3s" begin="2.8s" repeatCount="indefinite" />
             <animate attributeName="opacity" values="0;0.9;0" dur="3s" begin="2.8s" repeatCount="indefinite" />
           </circle>
-          <circle cx="530" cy="380" r="0" fill="rgba(239,68,68,0.5)" filter="url(#glow-r)">
-            <animate attributeName="r" values="0;8;0" dur="2.5s" begin="2.1s" repeatCount="indefinite" />
-            <animate attributeName="opacity" values="0;0.7;0" dur="2.5s" begin="2.1s" repeatCount="indefinite" />
-          </circle>
 
-          {/* ═══ Cities — larger, brighter, more prominent ═══ */}
-          {/* Tehran — main threat city */}
-          <circle cx="595" cy="185" r="22" fill="none" stroke="rgba(239,68,68,0.2)" strokeWidth="0.8">
-            <animate attributeName="r" values="22;32;22" dur="4s" repeatCount="indefinite" />
-            <animate attributeName="opacity" values="0.3;0.8;0.3" dur="4s" repeatCount="indefinite" />
-          </circle>
-          <circle cx="595" cy="185" r="6" fill="#ef4444" opacity="0.8" filter="url(#glow-city)">
-            <animate attributeName="r" values="5;7;5" dur="2s" repeatCount="indefinite" />
-          </circle>
-          <circle cx="595" cy="185" r="2.5" fill="#fca5a5" />
-          <text x="600" y="170" textAnchor="start" fill="#ef4444" fontSize="12" fontFamily="monospace" fontWeight="bold" opacity="0.9">Tehran</text>
+          {/* Intercept markers near Iran */}
+          {[
+            [tehranPt[0] - 50, tehranPt[1] + 40, 3.5],
+            [tehranPt[0] - 30, tehranPt[1] + 60, 3],
+            [tehranPt[0] - 70, tehranPt[1] + 55, 2.5],
+            [tehranPt[0] + 10, tehranPt[1] + 50, 3],
+            [tehranPt[0] - 90, tehranPt[1] + 45, 2.5],
+          ].map((m, i) => (
+            <circle key={`im-${i}`} cx={m[0]} cy={m[1]} r={m[2]} fill="#60a5fa" opacity="0.6" filter="url(#glow-b)"
+              style={{ animation: `intercept-dot ${3 + i * 0.3}s ease-in-out ${i * 0.5}s infinite` }} />
+          ))}
 
-          {/* Tel Aviv — defense city */}
-          <circle cx="240" cy="248" r="16" fill="none" stroke="rgba(96,165,250,0.25)" strokeWidth="0.8">
-            <animate attributeName="r" values="16;26;16" dur="3s" repeatCount="indefinite" />
-          </circle>
-          <circle cx="240" cy="248" r="5" fill="#3b82f6" opacity="0.9" filter="url(#glow-city)">
-            <animate attributeName="r" values="4;6;4" dur="2.5s" repeatCount="indefinite" />
-          </circle>
-          <circle cx="240" cy="248" r="2" fill="#bfdbfe" />
-          <text x="215" y="270" textAnchor="middle" fill="#60a5fa" fontSize="11" fontFamily="monospace" fontWeight="bold">Tel Aviv</text>
+          {/* ═══ Cities ═══ */}
+          {cities.map(c => (
+            <g key={c.name}>
+              {c.ring && (
+                <>
+                  <circle cx={c.cx} cy={c.cy} r={c.sz * 3} fill="none" stroke={`${c.color}40`} strokeWidth="0.8">
+                    <animate attributeName="r" values={`${c.sz * 3};${c.sz * 5};${c.sz * 3}`} dur="4s" repeatCount="indefinite" />
+                    <animate attributeName="opacity" values="0.3;0.8;0.3" dur="4s" repeatCount="indefinite" />
+                  </circle>
+                  {c.color === '#16a34a' && (
+                    <circle cx={c.cx} cy={c.cy} r={c.sz * 2} fill="none" stroke={`${c.color}40`} strokeWidth="0.6" />
+                  )}
+                </>
+              )}
+              <circle cx={c.cx} cy={c.cy} r={c.sz} fill={c.color} opacity="0.8" filter="url(#glow-city)">
+                {c.name === 'Tehran' && <animate attributeName="r" values="5;7;5" dur="2s" repeatCount="indefinite" />}
+                {c.name === 'Tel Aviv' && <animate attributeName="r" values="4;6;4" dur="2.5s" repeatCount="indefinite" />}
+              </circle>
+              <circle cx={c.cx} cy={c.cy} r={c.sz * 0.4}
+                fill={c.color === '#ef4444' ? '#fca5a5' : c.color === '#3b82f6' ? '#bfdbfe' : '#86efac'} />
+              <text x={c.cx + c.dx} y={c.cy + c.dy} textAnchor={c.dx < 0 ? 'end' : 'start'}
+                fill={c.color} fontSize={c.fs} fontFamily="monospace" fontWeight={c.bold ? 'bold' : 'normal'}
+                opacity="0.9">{c.name}</text>
+            </g>
+          ))}
 
-          {/* Beirut */}
-          <circle cx="258" cy="195" r="4" fill="#d97706" opacity="0.7" filter="url(#glow-city)" />
-          <text x="240" y="190" textAnchor="end" fill="rgba(217,119,6,0.85)" fontSize="10" fontFamily="monospace" fontWeight="bold">Beirut</text>
-
-          {/* Baghdad */}
-          <circle cx="420" cy="185" r="4" fill="#d97706" opacity="0.65" filter="url(#glow-city)" />
-          <text x="425" y="175" textAnchor="start" fill="rgba(217,119,6,0.75)" fontSize="10" fontFamily="monospace" fontWeight="bold">Baghdad</text>
-
-          {/* Incirlik — US base, green */}
-          <circle cx="310" cy="85" r="4" fill="#16a34a" opacity="0.8" filter="url(#glow-city)" />
-          <circle cx="310" cy="85" r="8" fill="none" stroke="rgba(22,163,74,0.3)" strokeWidth="0.6" />
-          <text x="295" y="78" textAnchor="end" fill="rgba(22,163,74,0.9)" fontSize="10" fontFamily="monospace" fontWeight="bold">Incirlik</text>
-
-          {/* Al Udeid — US base, green */}
-          <circle cx="535" cy="380" r="4" fill="#16a34a" opacity="0.7" filter="url(#glow-city)" />
-          <circle cx="535" cy="380" r="8" fill="none" stroke="rgba(22,163,74,0.25)" strokeWidth="0.6" />
-          <text x="520" y="375" textAnchor="end" fill="rgba(22,163,74,0.85)" fontSize="10" fontFamily="monospace" fontWeight="bold">Al Udeid</text>
-
-          {/* Cairo */}
-          <circle cx="160" cy="275" r="3.5" fill="#d97706" opacity="0.5" filter="url(#glow-city)" />
-          <text x="145" y="270" textAnchor="end" fill="rgba(217,119,6,0.6)" fontSize="10" fontFamily="monospace">Cairo</text>
-
-          {/* Riyadh */}
-          <circle cx="420" cy="355" r="3.5" fill="#d97706" opacity="0.45" filter="url(#glow-city)" />
-          <text x="405" y="365" textAnchor="end" fill="rgba(217,119,6,0.55)" fontSize="10" fontFamily="monospace">Riyadh</text>
-
-          {/* Dubai — green, US allied */}
-          <circle cx="645" cy="380" r="4" fill="#16a34a" opacity="0.7" filter="url(#glow-city)" />
-          <circle cx="645" cy="380" r="8" fill="none" stroke="rgba(22,163,74,0.2)" strokeWidth="0.5" />
-          <text x="660" y="385" textAnchor="start" fill="rgba(22,163,74,0.8)" fontSize="10" fontFamily="monospace" fontWeight="bold">Dubai</text>
-
-          {/* Isfahan — secondary Iran city */}
-          <circle cx="590" cy="240" r="3" fill="#ef4444" opacity="0.5" filter="url(#glow-city)" />
-          <text x="600" y="250" textAnchor="start" fill="rgba(239,68,68,0.5)" fontSize="9" fontFamily="monospace">Isfahan</text>
-
-          {/* Bandar Abbas */}
-          <circle cx="670" cy="295" r="3" fill="#ef4444" opacity="0.4" filter="url(#glow-city)" />
-          <text x="685" y="300" textAnchor="start" fill="rgba(239,68,68,0.45)" fontSize="9" fontFamily="monospace">B.Abbas</text>
-
-          {/* Intercept markers near Iran — blue dots showing successful intercepts */}
-          <circle cx="520" cy="170" r="3.5" fill="#60a5fa" opacity="0.7" filter="url(#glow-b)">
-            <animate attributeName="opacity" values="0.5;0.9;0.5" dur="3s" repeatCount="indefinite" />
-          </circle>
-          <circle cx="540" cy="195" r="3" fill="#60a5fa" opacity="0.6" filter="url(#glow-b)">
-            <animate attributeName="opacity" values="0.4;0.8;0.4" dur="3.5s" begin="0.5s" repeatCount="indefinite" />
-          </circle>
-          <circle cx="505" cy="200" r="2.5" fill="#60a5fa" opacity="0.5" filter="url(#glow-b)">
-            <animate attributeName="opacity" values="0.3;0.7;0.3" dur="4s" begin="1s" repeatCount="indefinite" />
-          </circle>
-          <circle cx="555" cy="210" r="3" fill="#60a5fa" opacity="0.6" filter="url(#glow-b)">
-            <animate attributeName="opacity" values="0.4;0.8;0.4" dur="3.2s" begin="1.5s" repeatCount="indefinite" />
-          </circle>
-          <circle cx="480" cy="180" r="2.5" fill="#60a5fa" opacity="0.5" filter="url(#glow-b)">
-            <animate attributeName="opacity" values="0.3;0.7;0.3" dur="3.8s" begin="2s" repeatCount="indefinite" />
-          </circle>
-
-          {/* Coordinate labels — more visible */}
-          <text x="12" y="55" fill="rgba(128,128,128,0.2)" fontSize="9" fontFamily="monospace">40°N</text>
-          <text x="12" y="175" fill="rgba(128,128,128,0.2)" fontSize="9" fontFamily="monospace">30°N</text>
-          <text x="12" y="295" fill="rgba(128,128,128,0.2)" fontSize="9" fontFamily="monospace">24°N</text>
-          <text x="12" y="430" fill="rgba(128,128,128,0.2)" fontSize="9" fontFamily="monospace">18°N</text>
-          <text x="150" y="472" fill="rgba(128,128,128,0.2)" fontSize="9" fontFamily="monospace">30°E</text>
-          <text x="330" y="472" fill="rgba(128,128,128,0.2)" fontSize="9" fontFamily="monospace">40°E</text>
-          <text x="510" y="472" fill="rgba(128,128,128,0.2)" fontSize="9" fontFamily="monospace">50°E</text>
-          <text x="680" y="472" fill="rgba(128,128,128,0.2)" fontSize="9" fontFamily="monospace">60°E</text>
+          {/* Coordinate labels */}
+          {latLabels.map(l => (
+            <text key={`lat-${l.lat}`} x="12" y={l.y} fill="rgba(128,128,128,0.2)" fontSize="9" fontFamily="monospace">{l.lat}&deg;N</text>
+          ))}
+          {lonLabels.map(l => (
+            <text key={`lon-${l.lon}`} x={l.x} y="472" fill="rgba(128,128,128,0.2)" fontSize="9" fontFamily="monospace">{l.lon}&deg;E</text>
+          ))}
         </svg>
       </div>
 
@@ -725,7 +745,7 @@ function ThreatMap() {
 
       {/* Coordinate labels along bottom */}
       <div className="absolute bottom-3 right-4 flex gap-6 text-[8px] font-[family-name:var(--font-share-tech-mono)] text-zinc-300 dark:text-zinc-600">
-        <span>30°E</span><span>40°E</span><span>50°E</span><span>60°E</span><span>70°E</span>
+        <span>30&deg;E</span><span>40&deg;E</span><span>50&deg;E</span><span>60&deg;E</span><span>70&deg;E</span>
       </div>
     </div>
   );
