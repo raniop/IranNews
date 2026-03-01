@@ -1,6 +1,6 @@
 // Visitor tracker with Supabase persistence
 // Live visitors: in-memory (transient, 30s timeout)
-// Page views + history: persisted in Supabase
+// Page views + history: persisted in Supabase (falls back to in-memory)
 
 import { getSupabase } from '../supabase';
 
@@ -14,11 +14,18 @@ interface VisitorInfo {
 const visitors = new Map<string, VisitorInfo>();
 const TIMEOUT_MS = 30_000;
 
+// In-memory fallback counters (used when Supabase unavailable)
+let memoryPageViews = 0;
+interface PageViewBucket { ts: number; views: number; }
+const BUCKET_SIZE = 5 * 60 * 1000;
+const MAX_BUCKETS = 288;
+const memoryBuckets: PageViewBucket[] = [];
+
 // Cache for Supabase queries (avoid hitting DB every 3s)
 let cachedTotal: number | null = null;
 let cachedHistory: { time: string; views: number }[] | null = null;
 let cacheTimestamp = 0;
-const CACHE_TTL = 15_000; // 15 seconds
+const CACHE_TTL = 15_000;
 
 function cleanStale() {
   const now = Date.now();
@@ -27,6 +34,18 @@ function cleanStale() {
       visitors.delete(id);
     }
   }
+}
+
+function getCurrentBucket(): PageViewBucket {
+  const now = Date.now();
+  const bucketStart = Math.floor(now / BUCKET_SIZE) * BUCKET_SIZE;
+  if (memoryBuckets.length === 0 || memoryBuckets[memoryBuckets.length - 1].ts !== bucketStart) {
+    const bucket = { ts: bucketStart, views: 0 };
+    memoryBuckets.push(bucket);
+    while (memoryBuckets.length > MAX_BUCKETS) memoryBuckets.shift();
+    return bucket;
+  }
+  return memoryBuckets[memoryBuckets.length - 1];
 }
 
 export function heartbeat(visitorId: string, page: string, referrer?: string): void {
@@ -38,85 +57,89 @@ export function heartbeat(visitorId: string, page: string, referrer?: string): v
   });
 
   if (isNew) {
-    // Persist to Supabase (fire-and-forget)
-    getSupabase()
-      .from('page_views')
-      .insert({ visitor_id: visitorId, page, referrer })
-      .then(({ error }) => {
-        if (error) console.error('Supabase insert error:', error.message);
-      });
+    // Always update in-memory counters
+    memoryPageViews++;
+    getCurrentBucket().views++;
 
-    // Invalidate cache so next getStats() fetches fresh data
-    cachedTotal = null;
-    cachedHistory = null;
+    // Also persist to Supabase if available (fire-and-forget)
+    const sb = getSupabase();
+    if (sb) {
+      sb.from('page_views')
+        .insert({ visitor_id: visitorId, page, referrer })
+        .then(({ error }) => {
+          if (error) console.error('Supabase insert error:', error.message);
+        });
+      cachedTotal = null;
+      cachedHistory = null;
+    }
   }
 }
 
-async function fetchTotalPageViews(): Promise<number> {
-  const { count, error } = await getSupabase()
-    .from('page_views')
-    .select('*', { count: 'exact', head: true });
+async function fetchFromSupabase(): Promise<{ total: number; history: { time: string; views: number }[] } | null> {
+  const sb = getSupabase();
+  if (!sb) return null;
 
-  if (error) {
-    console.error('Supabase count error:', error.message);
-    return 0;
+  try {
+    const [countResult, historyResult] = await Promise.all([
+      sb.from('page_views').select('*', { count: 'exact', head: true }),
+      sb.from('page_views')
+        .select('created_at')
+        .gte('created_at', new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString())
+        .order('created_at', { ascending: true }),
+    ]);
+
+    if (countResult.error || historyResult.error) return null;
+
+    const total = countResult.count ?? 0;
+
+    // Group into 5-minute buckets
+    const buckets = new Map<number, number>();
+    for (const row of historyResult.data || []) {
+      const ts = new Date(row.created_at).getTime();
+      const bucketStart = Math.floor(ts / BUCKET_SIZE) * BUCKET_SIZE;
+      buckets.set(bucketStart, (buckets.get(bucketStart) || 0) + 1);
+    }
+
+    const history = Array.from(buckets.entries())
+      .sort((a, b) => a[0] - b[0])
+      .map(([ts, views]) => ({ time: new Date(ts).toISOString(), views }));
+
+    return { total, history };
+  } catch {
+    return null;
   }
-  return count ?? 0;
-}
-
-async function fetchHistory(): Promise<{ time: string; views: number }[]> {
-  // Get page views from last 24 hours, grouped by 5-min buckets
-  const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
-
-  const { data, error } = await getSupabase()
-    .from('page_views')
-    .select('created_at')
-    .gte('created_at', since)
-    .order('created_at', { ascending: true });
-
-  if (error) {
-    console.error('Supabase history error:', error.message);
-    return [];
-  }
-
-  if (!data || data.length === 0) return [];
-
-  // Group into 5-minute buckets
-  const BUCKET_MS = 5 * 60 * 1000;
-  const buckets = new Map<number, number>();
-
-  for (const row of data) {
-    const ts = new Date(row.created_at).getTime();
-    const bucketStart = Math.floor(ts / BUCKET_MS) * BUCKET_MS;
-    buckets.set(bucketStart, (buckets.get(bucketStart) || 0) + 1);
-  }
-
-  return Array.from(buckets.entries())
-    .sort((a, b) => a[0] - b[0])
-    .map(([ts, views]) => ({
-      time: new Date(ts).toISOString(),
-      views,
-    }));
 }
 
 export async function getStats() {
   cleanStale();
 
+  let totalPageViews = memoryPageViews;
+  let history: { time: string; views: number }[] = [];
+
+  // Try Supabase
   const now = Date.now();
   const cacheExpired = now - cacheTimestamp > CACHE_TTL;
 
-  // Fetch from Supabase if cache expired
   if (cacheExpired || cachedTotal === null || cachedHistory === null) {
-    const [total, history] = await Promise.all([
-      fetchTotalPageViews(),
-      fetchHistory(),
-    ]);
-    cachedTotal = total;
-    cachedHistory = history;
-    cacheTimestamp = now;
+    const sbData = await fetchFromSupabase();
+    if (sbData) {
+      cachedTotal = sbData.total;
+      cachedHistory = sbData.history;
+      cacheTimestamp = now;
+    }
   }
 
-  // Count visitors per page (from in-memory live data)
+  if (cachedTotal !== null && cachedHistory !== null) {
+    totalPageViews = cachedTotal;
+    history = cachedHistory;
+  } else {
+    // Fallback to in-memory history
+    const cutoff = now - 24 * 60 * 60 * 1000;
+    history = memoryBuckets
+      .filter(b => b.ts >= cutoff)
+      .map(b => ({ time: new Date(b.ts).toISOString(), views: b.views }));
+  }
+
   const pageBreakdown: Record<string, number> = {};
   for (const [, info] of visitors) {
     pageBreakdown[info.page] = (pageBreakdown[info.page] || 0) + 1;
@@ -125,7 +148,7 @@ export async function getStats() {
   return {
     liveVisitors: visitors.size,
     pageBreakdown,
-    totalPageViews: cachedTotal,
-    history: cachedHistory,
+    totalPageViews,
+    history,
   };
 }

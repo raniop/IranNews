@@ -1,17 +1,25 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 
 let _supabase: SupabaseClient | null = null;
+let _initFailed = false;
 
-export function getSupabase(): SupabaseClient {
-  if (!_supabase) {
-    // Use bracket notation to prevent Turbopack from inlining at build time
-    const env = process.env;
-    const url = env['SUPABASE_URL'];
-    const key = env['SUPABASE_ANON_KEY'];
+export function getSupabase(): SupabaseClient | null {
+  if (_initFailed) return null;
+  if (_supabase) return _supabase;
+
+  try {
+    const url = String(process.env.SUPABASE_URL || '');
+    const key = String(process.env.SUPABASE_ANON_KEY || '');
     if (!url || !key) {
-      throw new Error('Supabase env vars not configured');
+      console.warn('Supabase env vars not set, analytics will use in-memory only');
+      _initFailed = true;
+      return null;
     }
     _supabase = createClient(url, key);
+    return _supabase;
+  } catch (e) {
+    console.warn('Failed to initialize Supabase:', e);
+    _initFailed = true;
+    return null;
   }
-  return _supabase;
 }
