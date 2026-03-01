@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { Geist, Geist_Mono } from 'next/font/google';
+import { Geist, Geist_Mono, Orbitron, Share_Tech_Mono } from 'next/font/google';
 import './globals.css';
 import ThemeProvider from '@/components/layout/ThemeProvider';
 import LanguageProvider from '@/components/layout/LanguageProvider';
@@ -15,6 +15,18 @@ const geistSans = Geist({
 const geistMono = Geist_Mono({
   variable: '--font-geist-mono',
   subsets: ['latin'],
+});
+
+const orbitron = Orbitron({
+  variable: '--font-orbitron',
+  subsets: ['latin'],
+  weight: ['400', '500', '600', '700', '800', '900'],
+});
+
+const shareTechMono = Share_Tech_Mono({
+  variable: '--font-share-tech-mono',
+  subsets: ['latin'],
+  weight: '400',
 });
 
 export const metadata: Metadata = {
@@ -45,7 +57,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-background text-foreground`}
+        className={`${geistSans.variable} ${geistMono.variable} ${orbitron.variable} ${shareTechMono.variable} antialiased bg-background text-foreground`}
       >
         <ThemeProvider>
           <LanguageProvider>
