@@ -125,6 +125,14 @@ const translations = {
   'prediction.updated': { en: 'Updated', he: 'עודכן' },
   'prediction.basedOn': { en: 'Based on', he: 'מבוסס על' },
   'prediction.articles': { en: 'recent articles', he: 'כתבות אחרונות' },
+  'prediction.infoTitle': { en: 'How to read this score', he: 'איך לקרוא את הציון' },
+  'prediction.info1_100': { en: '1 = Full-scale war', he: '1 = מלחמה כוללת' },
+  'prediction.info50': { en: '50 = Tense standoff', he: '50 = עימות מתוח' },
+  'prediction.info100_1': { en: '100 = Peace', he: '100 = שלום' },
+  'prediction.infoDesc': {
+    en: 'AI analyzes recent headlines to assess the Iran conflict trajectory. The score reflects escalation vs. de-escalation signals.',
+    he: 'AI מנתח כותרות אחרונות כדי להעריך את מגמת העימות עם איראן. הציון משקף סימני הסלמה מול סימני הרגעה.',
+  },
 
   // Common
   'common.retry': { en: 'Retry', he: 'נסה שוב' },

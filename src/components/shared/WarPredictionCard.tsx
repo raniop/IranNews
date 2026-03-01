@@ -89,6 +89,7 @@ export default function WarPredictionCard({ articles }: { articles: Article[] })
   const [prediction, setPrediction] = useState<WarPrediction | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
+  const [showInfo, setShowInfo] = useState(false);
 
   const fetchPrediction = useCallback(async (arts: Article[]) => {
     setLoading(true);
@@ -153,13 +154,41 @@ export default function WarPredictionCard({ articles }: { articles: Article[] })
     <div className="rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 p-4 mb-4 overflow-hidden">
       {/* Header */}
       <div className="flex items-center justify-between mb-3">
-        <h2 className="text-sm font-semibold text-zinc-900 dark:text-white">
-          {t('prediction.title')}
-        </h2>
+        <div className="flex items-center gap-1.5">
+          <h2 className="text-sm font-semibold text-zinc-900 dark:text-white">
+            {t('prediction.title')}
+          </h2>
+          <button
+            onClick={() => setShowInfo(!showInfo)}
+            className="w-5 h-5 rounded-full border border-zinc-300 dark:border-zinc-600 flex items-center justify-center text-[10px] font-bold text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 hover:border-zinc-400 dark:hover:border-zinc-400 transition-colors"
+            aria-label="Info"
+          >
+            ?
+          </button>
+        </div>
         <span className="text-[10px] text-zinc-400">
           {t('prediction.updated')} {timeAgo(prediction.analyzedAt, lang)}
         </span>
       </div>
+
+      {/* Info panel */}
+      {showInfo && (
+        <div className="mb-3 p-3 rounded-lg bg-zinc-50 dark:bg-zinc-800 text-xs text-zinc-600 dark:text-zinc-300 space-y-2">
+          <p className="font-medium text-zinc-900 dark:text-white">
+            {t('prediction.infoTitle')}
+          </p>
+          <div className="flex items-center gap-3 text-[11px]">
+            <span className="text-red-500 font-medium">{t('prediction.info1_100')}</span>
+            <span className="text-zinc-400">|</span>
+            <span className="text-yellow-500 font-medium">{t('prediction.info50')}</span>
+            <span className="text-zinc-400">|</span>
+            <span className="text-green-500 font-medium">{t('prediction.info100_1')}</span>
+          </div>
+          <p className="text-[11px] text-zinc-500 dark:text-zinc-400">
+            {t('prediction.infoDesc')}
+          </p>
+        </div>
+      )}
 
       {/* Main content */}
       <div className="flex items-center gap-4">
