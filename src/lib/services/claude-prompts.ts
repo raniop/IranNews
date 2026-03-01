@@ -123,7 +123,7 @@ Guidelines for scoring:
 - 76-90: Active negotiations, ceasefire talks
 - 91-100: Peace agreement, normalized relations
 
-Provide exactly 3 escalation factors and up to 3 de-escalation factors based on the actual news content. Keep factors concise (3-6 words each).
+You MUST provide exactly 3 escalation factors and exactly 3 de-escalation factors based on the actual news content. Even in extreme situations there are always some de-escalation signals (diplomatic channels, international pressure, economic interests, etc.). Keep factors concise (3-6 words each).
 Return ONLY valid JSON, no other text.`,
     user: `Analyze these recent news headlines about the Iran conflict and assess the war/peace trajectory:\n\n${articleSummaries}`,
   };

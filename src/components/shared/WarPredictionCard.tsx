@@ -174,16 +174,23 @@ export default function WarPredictionCard({ articles }: { articles: Article[] })
       {/* Info panel */}
       {showInfo && (
         <div className="mb-3 p-3 rounded-lg bg-zinc-50 dark:bg-zinc-800 text-xs text-zinc-600 dark:text-zinc-300 space-y-2">
-          <p className="font-medium text-zinc-900 dark:text-white">
+          <p className="font-semibold text-zinc-900 dark:text-white">
             {t('prediction.infoTitle')}
           </p>
-          <div className="flex items-center gap-3 text-[11px]">
-            <span className="text-red-500 font-medium">{t('prediction.info1_100')}</span>
-            <span className="text-zinc-400">|</span>
-            <span className="text-yellow-500 font-medium">{t('prediction.info50')}</span>
-            <span className="text-zinc-400">|</span>
-            <span className="text-green-500 font-medium">{t('prediction.info100_1')}</span>
-          </div>
+          <p className="text-[11px] leading-relaxed" dir="ltr">
+            {t('prediction.infoScale').split(' | ').map((segment, i) => {
+              const colors = [
+                'text-red-600', 'text-red-500', 'text-orange-500',
+                'text-yellow-600', 'text-lime-600', 'text-green-500', 'text-green-600',
+              ];
+              return (
+                <span key={i}>
+                  {i > 0 && <span className="text-zinc-300 dark:text-zinc-600 mx-1">|</span>}
+                  <span className={`${colors[i]} font-medium`}>{segment}</span>
+                </span>
+              );
+            })}
+          </p>
           <p className="text-[11px] text-zinc-500 dark:text-zinc-400">
             {t('prediction.infoDesc')}
           </p>
@@ -242,21 +249,23 @@ export default function WarPredictionCard({ articles }: { articles: Article[] })
         </div>
 
         {/* De-escalation */}
-        <div>
-          <p className="text-[10px] font-medium text-green-500 mb-1">
-            {t('prediction.deescalation')}
-          </p>
-          <div className="flex flex-wrap gap-1">
-            {prediction.deescalationFactors.slice(0, 3).map((f, i) => (
-              <span
-                key={i}
-                className="inline-block px-1.5 py-0.5 rounded text-[10px] bg-green-50 text-green-600 dark:bg-green-900/30 dark:text-green-400"
-              >
-                {f}
-              </span>
-            ))}
+        {prediction.deescalationFactors.length > 0 && (
+          <div>
+            <p className="text-[10px] font-medium text-green-500 mb-1">
+              {t('prediction.deescalation')}
+            </p>
+            <div className="flex flex-wrap gap-1">
+              {prediction.deescalationFactors.slice(0, 3).map((f, i) => (
+                <span
+                  key={i}
+                  className="inline-block px-1.5 py-0.5 rounded text-[10px] bg-green-50 text-green-600 dark:bg-green-900/30 dark:text-green-400"
+                >
+                  {f}
+                </span>
+              ))}
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </div>
   );

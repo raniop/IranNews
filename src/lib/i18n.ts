@@ -125,13 +125,14 @@ const translations = {
   'prediction.updated': { en: 'Updated', he: 'עודכן' },
   'prediction.basedOn': { en: 'Based on', he: 'מבוסס על' },
   'prediction.articles': { en: 'recent articles', he: 'כתבות אחרונות' },
-  'prediction.infoTitle': { en: 'How to read this score', he: 'איך לקרוא את הציון' },
-  'prediction.info1_100': { en: '1 = Full-scale war', he: '1 = מלחמה כוללת' },
-  'prediction.info50': { en: '50 = Tense standoff', he: '50 = עימות מתוח' },
-  'prediction.info100_1': { en: '100 = Peace', he: '100 = שלום' },
+  'prediction.infoTitle': { en: 'Peace Score (1-100)', he: 'ציון שלום (1-100)' },
+  'prediction.infoScale': {
+    en: '1-15: Active war | 16-30: Major strikes | 31-45: Heightened tensions | 46-60: Political standoff | 61-75: Diplomacy | 76-90: Negotiations | 91-100: Peace',
+    he: '1-15: מלחמה פעילה | 16-30: מתקפות משמעותיות | 31-45: מתיחות גבוהה | 46-60: עימות מדיני | 61-75: דיפלומטיה | 76-90: משא ומתן | 91-100: שלום',
+  },
   'prediction.infoDesc': {
-    en: 'AI analyzes recent headlines to assess the Iran conflict trajectory. The score reflects escalation vs. de-escalation signals.',
-    he: 'AI מנתח כותרות אחרונות כדי להעריך את מגמת העימות עם איראן. הציון משקף סימני הסלמה מול סימני הרגעה.',
+    en: 'AI analyzes 50 recent headlines from all sources and assesses the Iran-Israel-US conflict trajectory. Escalation factors (red) push the score down, de-escalation signals (green) push it up.',
+    he: 'AI מנתח 50 כותרות אחרונות מכל המקורות ומעריך את מגמת העימות איראן-ישראל-ארה"ב. גורמי הסלמה (אדום) מורידים את הציון, סימני הרגעה (ירוק) מעלים אותו.',
   },
 
   // Common
