@@ -28,5 +28,5 @@ export const ARSENAL_BASELINE: ArsenalData = {
     { date: '2025-09', missiles: 1100, label: 'Post-Conflict Depletion' },
     { date: '2026-02', missiles: 989, label: 'Current Estimate' },
   ],
-  sources: ['CENTCOM', 'IranWatch', '19FortyFive', 'Israel-Alma', 'ISW'],
+  sources: ['CENTCOM', 'IranWatch', '19FortyFive', 'Israel-Alma', 'ISW', 'TRT World', 'NPR', 'BBC'],
 };
