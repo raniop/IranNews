@@ -26,6 +26,7 @@ export default function Header() {
         <nav className="hidden md:flex items-center gap-1">
           <NavLink href="/" label={t('nav.feed')} active={pathname === '/'} />
           <NavLink href="/trending" label={t('nav.trending')} active={pathname === '/trending'} />
+          <NavLink href="/arsenal" label={t('nav.arsenal')} active={pathname === '/arsenal'} />
           <NavLink href="/sources" label={t('nav.sources')} active={pathname === '/sources'} />
           <NavLink href="/settings" label={t('nav.settings')} active={pathname === '/settings'} />
         </nav>

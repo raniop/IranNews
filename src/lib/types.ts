@@ -118,6 +118,22 @@ export interface SourceFetchResult {
   error?: string;
 }
 
+export interface ArsenalData {
+  lastUpdated: string;
+  missiles: {
+    currentEstimate: number;
+    peakInventory: number;
+    peakSource: string;
+    depletedJune2025: { low: number; high: number };
+  };
+  launchers: {
+    totalFleet: number;
+    lossesPercent: number;
+  };
+  timeline: { date: string; missiles: number; label: string }[];
+  sources: string[];
+}
+
 export interface WarPrediction {
   score: number; // 1-100 (1=full war, 100=peace)
   trend: 'escalating' | 'stable' | 'de-escalating';

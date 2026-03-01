@@ -136,6 +136,27 @@ const translations = {
     he: 'AI מנתח 50 כותרות אחרונות מכל המקורות ומעריך את מגמת העימות איראן-ישראל-ארה"ב. גורמי הסלמה (אדום) מורידים את הציון, סימני הרגעה (ירוק) מעלים אותו.',
   },
 
+  // Arsenal
+  'nav.arsenal': { en: 'Arsenal', he: 'ארסנל' },
+  'arsenal.title': { en: 'Iran Missile Arsenal', he: 'ארסנל הטילים של איראן' },
+  'arsenal.subtitle': { en: 'OSINT-based tracking of Iran\'s ballistic missile inventory', he: 'מעקב מבוסס OSINT אחר מלאי הטילים הבליסטיים של איראן' },
+  'arsenal.currentMissiles': { en: 'Current Missiles', he: 'טילים נוכחיים' },
+  'arsenal.estimated': { en: 'Estimated inventory', he: 'מלאי משוער' },
+  'arsenal.launchers': { en: 'Mobile Launchers', he: 'משגרים ניידים' },
+  'arsenal.telMel': { en: 'TEL/MEL units', he: 'יחידות TEL/MEL' },
+  'arsenal.depletion': { en: 'Depletion', he: 'דלדול' },
+  'arsenal.fromPeak': { en: 'from peak inventory', he: 'ממלאי השיא' },
+  'arsenal.launcherLosses': { en: 'Launcher Losses', he: 'אבדות משגרים' },
+  'arsenal.destroyed': { en: 'destroyed in 2025', he: 'הושמדו ב-2025' },
+  'arsenal.timeline': { en: 'Arsenal Timeline', he: 'ציר זמן ארסנל' },
+  'arsenal.timelineDesc': { en: 'Estimated missile inventory over time', he: 'מלאי טילים משוער לאורך זמן' },
+  'arsenal.sources': { en: 'Intelligence Sources', he: 'מקורות מודיעין' },
+  'arsenal.lastUpdated': { en: 'Last updated', he: 'עודכן לאחרונה' },
+  'arsenal.loading': { en: 'Loading arsenal data...', he: 'טוען נתוני ארסנל...' },
+  'arsenal.error': { en: 'Could not load arsenal data', he: 'לא ניתן לטעון נתוני ארסנל' },
+  'arsenal.depleted': { en: 'depleted since June 2025', he: 'דולדלו מאז יוני 2025' },
+  'arsenal.peakNote': { en: 'Peak', he: 'שיא' },
+
   // Common
   'common.retry': { en: 'Retry', he: 'נסה שוב' },
 } as const;
