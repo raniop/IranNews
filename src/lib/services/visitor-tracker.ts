@@ -2,7 +2,7 @@
 // Live visitors: in-memory (transient, 30s timeout)
 // Page views + history: persisted in Supabase
 
-import { supabase } from '../supabase';
+import { getSupabase } from '../supabase';
 
 interface VisitorInfo {
   lastSeen: number;
@@ -39,7 +39,7 @@ export function heartbeat(visitorId: string, page: string, referrer?: string): v
 
   if (isNew) {
     // Persist to Supabase (fire-and-forget)
-    supabase
+    getSupabase()
       .from('page_views')
       .insert({ visitor_id: visitorId, page, referrer })
       .then(({ error }) => {
@@ -53,7 +53,7 @@ export function heartbeat(visitorId: string, page: string, referrer?: string): v
 }
 
 async function fetchTotalPageViews(): Promise<number> {
-  const { count, error } = await supabase
+  const { count, error } = await getSupabase()
     .from('page_views')
     .select('*', { count: 'exact', head: true });
 
@@ -68,7 +68,7 @@ async function fetchHistory(): Promise<{ time: string; views: number }[]> {
   // Get page views from last 24 hours, grouped by 5-min buckets
   const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
 
-  const { data, error } = await supabase
+  const { data, error } = await getSupabase()
     .from('page_views')
     .select('created_at')
     .gte('created_at', since)
