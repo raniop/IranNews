@@ -29,9 +29,13 @@ export default function ArticleDetailPage() {
   const { analysis, loading: analysisLoading, analyze } = useAIAnalyze();
   const { translation, loading: translateLoading, translate } = useAITranslate();
 
-  // Fetch full article content
+  // Fetch full article content (skip if article already has content, e.g. Telegram)
   useEffect(() => {
     if (!article?.url) return;
+    if (article.content) {
+      setContent(article.content);
+      return;
+    }
     setContentLoading(true);
     setContentError(false);
     fetch('/api/article-content', {
@@ -47,7 +51,7 @@ export default function ArticleDetailPage() {
       })
       .catch(() => setContentError(true))
       .finally(() => setContentLoading(false));
-  }, [article?.url]);
+  }, [article?.url, article?.content]);
 
   if (isLoading) return <LoadingSpinner label={t('article.loading')} />;
 

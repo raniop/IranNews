@@ -3,6 +3,32 @@ import * as cheerio from 'cheerio';
 
 export const maxDuration = 30;
 
+// In-memory content cache: URL -> { content, ogImage, fetchedAt }
+const contentCache = new Map<
+  string,
+  { content: string; contentHtml: string; ogImage?: string; fetchedAt: number }
+>();
+const CONTENT_CACHE_TTL = 30 * 60 * 1000; // 30 minutes
+const MAX_CACHE_SIZE = 200;
+
+function getCached(url: string) {
+  const entry = contentCache.get(url);
+  if (entry && Date.now() - entry.fetchedAt < CONTENT_CACHE_TTL) {
+    return entry;
+  }
+  if (entry) contentCache.delete(url);
+  return null;
+}
+
+function setCache(url: string, content: string, contentHtml: string, ogImage?: string) {
+  // Evict oldest entries if cache is full
+  if (contentCache.size >= MAX_CACHE_SIZE) {
+    const oldest = contentCache.keys().next().value;
+    if (oldest) contentCache.delete(oldest);
+  }
+  contentCache.set(url, { content, contentHtml, ogImage, fetchedAt: Date.now() });
+}
+
 export async function POST(request: Request) {
   try {
     const { url } = await request.json();
@@ -10,7 +36,20 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Missing url' }, { status: 400 });
     }
 
-    const res = await fetch(url, {
+    // Check cache first
+    const cached = getCached(url);
+    if (cached) {
+      return NextResponse.json({
+        content: cached.content,
+        contentHtml: cached.contentHtml,
+        ogImage: cached.ogImage,
+      });
+    }
+
+    // Special handling for Telegram URLs
+    const isTelegram = /^https?:\/\/(t\.me|telegram\.me)\//i.test(url);
+
+    const res = await fetch(isTelegram ? url.replace('t.me/', 't.me/s/') : url, {
       headers: {
         'User-Agent':
           'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Safari/605.1.15',
@@ -28,6 +67,22 @@ export async function POST(request: Request) {
 
     const html = await res.text();
     const $ = cheerio.load(html);
+
+    // Telegram-specific extraction
+    if (isTelegram) {
+      const msgText = $('.tgme_widget_message_text').last().text().trim();
+      const photoStyle = $('.tgme_widget_message_photo_wrap').last().attr('style') || '';
+      const imgMatch = photoStyle.match(/url\('([^']+)'\)/);
+      const tgImage = imgMatch?.[1] ||
+        $('meta[property="og:image"]').attr('content') ||
+        undefined;
+
+      if (msgText) {
+        setCache(url, msgText, '', tgImage);
+        return NextResponse.json({ content: msgText, contentHtml: '', ogImage: tgImage });
+      }
+      // Fall through to generic extraction if Telegram-specific failed
+    }
 
     // Remove scripts, styles, nav, footer, ads
     $('script, style, nav, footer, header, aside, iframe, .ad, .ads, .sidebar, .comments, .share, .social, .related, .newsletter, [role="navigation"]').remove();
@@ -104,6 +159,11 @@ export async function POST(request: Request) {
         }
       });
       contentText = paragraphs.slice(0, 20).join('\n\n');
+    }
+
+    // Cache the result
+    if (contentText) {
+      setCache(url, contentText, contentHtml, ogImage);
     }
 
     return NextResponse.json({

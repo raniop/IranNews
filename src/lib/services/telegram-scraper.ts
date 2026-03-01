@@ -40,6 +40,8 @@ export async function fetchTelegramArticles(source: NewsSource): Promise<Article
     const lines = text.split('\n').filter(l => l.trim().length > 0);
     const title = lines[0]?.substring(0, 200) || text.substring(0, 200);
     const description = lines.length > 1 ? lines.slice(1, 4).join(' ').substring(0, 500) : undefined;
+    // Store full message text as content so the detail page doesn't need to re-fetch
+    const fullContent = lines.length > 1 ? lines.slice(1).join('\n\n') : undefined;
 
     const [channel, msgId] = post.split('/');
     const url = `https://t.me/${channel}/${msgId}`;
@@ -48,6 +50,7 @@ export async function fetchTelegramArticles(source: NewsSource): Promise<Article
       id: generateArticleId(url),
       title: title.trim(),
       articleDescription: description?.trim(),
+      content: fullContent?.trim(),
       url,
       imageURL,
       publishedDate: datetime ? new Date(datetime).toISOString() : new Date().toISOString(),
