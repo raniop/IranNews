@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Article, CATEGORY_CONFIG, NewsCategory } from '@/lib/types';
 import { relativeTime } from '@/lib/utils';
 import CategoryBadge from '@/components/shared/CategoryBadge';
@@ -17,10 +17,47 @@ const CATEGORY_GRADIENTS: Record<NewsCategory, string> = {
   neutral: 'from-yellow-900 via-amber-800 to-orange-900',
 };
 
+// Global cache so we don't re-fetch og:image for the same URL across re-renders
+const ogImageCache = new Map<string, string | null>();
+
 export default function ArticleRow({ article }: ArticleRowProps) {
   const config = CATEGORY_CONFIG[article.category];
   const [imgFailed, setImgFailed] = useState(false);
-  const showImage = article.imageURL && !imgFailed;
+  const [ogImage, setOgImage] = useState<string | null>(() => {
+    return ogImageCache.get(article.url) ?? null;
+  });
+  const [ogFetched, setOgFetched] = useState(() => ogImageCache.has(article.url));
+
+  // Lazily fetch og:image when article has no image
+  useEffect(() => {
+    if (article.imageURL || ogFetched) return;
+
+    let cancelled = false;
+    fetch('/api/og-image', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ url: article.url }),
+    })
+      .then(r => r.json())
+      .then(data => {
+        if (!cancelled) {
+          ogImageCache.set(article.url, data.image || null);
+          setOgImage(data.image || null);
+          setOgFetched(true);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          ogImageCache.set(article.url, null);
+          setOgFetched(true);
+        }
+      });
+
+    return () => { cancelled = true; };
+  }, [article.imageURL, article.url, ogFetched]);
+
+  const imageToShow = article.imageURL || ogImage;
+  const showImage = imageToShow && !imgFailed;
 
   return (
     <Link
@@ -32,7 +69,7 @@ export default function ArticleRow({ article }: ArticleRowProps) {
         <div className="relative w-full h-40 overflow-hidden">
           {showImage ? (
             <img
-              src={article.imageURL}
+              src={imageToShow!}
               alt=""
               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
               loading="lazy"

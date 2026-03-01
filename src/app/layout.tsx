@@ -4,6 +4,7 @@ import './globals.css';
 import ThemeProvider from '@/components/layout/ThemeProvider';
 import Header from '@/components/layout/Header';
 import BottomNav from '@/components/layout/BottomNav';
+import VisitorHeartbeat from '@/components/shared/VisitorHeartbeat';
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -37,6 +38,7 @@ export default function RootLayout({
             <Header />
             <main className="flex-1 pb-20 md:pb-0">{children}</main>
             <BottomNav />
+            <VisitorHeartbeat />
           </div>
         </ThemeProvider>
       </body>
