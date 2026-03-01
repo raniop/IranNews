@@ -109,17 +109,14 @@ export default function ArsenalPage() {
             </div>
           </div>
           <div className="text-center">
-            <div className="text-zinc-500 dark:text-[#516e7c] font-[family-name:var(--font-share-tech-mono)] text-xs tabular-nums">
+            <div className="text-zinc-600 dark:text-[#9ccce4] font-[family-name:var(--font-share-tech-mono)] text-base font-bold tracking-widest tabular-nums">
               {utcTime}
-              <span className="ml-2">UTC</span>
+              <span className="ml-1.5">UTC</span>
             </div>
-            <p className="text-zinc-400 dark:text-[#466270] text-[10px] font-[family-name:var(--font-share-tech-mono)]">{utcDate}</p>
+            <p className="text-zinc-400 dark:text-[#4c6876] text-[10px]">{utcDate}</p>
           </div>
-          <div className="text-right">
-            <span className="text-xs font-bold text-zinc-500 dark:text-[#466270] border border-zinc-300 dark:border-[#1b2b36] rounded px-2 py-1 cursor-pointer hover:text-zinc-700 dark:hover:text-[#bedded] transition-colors">
-              עו
-            </span>
-          </div>
+          {/* Empty right spacer to keep clock centered */}
+          <div className="w-[140px]" />
         </div>
       </div>
 
