@@ -82,7 +82,7 @@ export async function POST(request: Request) {
         // Get clean HTML (paragraphs, headers, lists only)
         const cleanParts: string[] = [];
         $el.find('p, h1, h2, h3, h4, ul, ol, blockquote').each((_, el) => {
-          const tag = (el as cheerio.Element).tagName;
+          const tag = (el as unknown as { tagName: string }).tagName;
           const text = $(el).text().trim();
           if (text.length > 5) {
             cleanParts.push(`<${tag}>${text}</${tag}>`);
