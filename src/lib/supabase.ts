@@ -4,8 +4,10 @@ let _supabase: SupabaseClient | null = null;
 
 export function getSupabase(): SupabaseClient {
   if (!_supabase) {
-    const url = process.env.SUPABASE_URL;
-    const key = process.env.SUPABASE_ANON_KEY;
+    // Use bracket notation to prevent Turbopack from inlining at build time
+    const env = process.env;
+    const url = env['SUPABASE_URL'];
+    const key = env['SUPABASE_ANON_KEY'];
     if (!url || !key) {
       throw new Error('Supabase env vars not configured');
     }
