@@ -3,6 +3,7 @@ import { getEnabledSources } from '../sources';
 import { fetchRSSArticles } from './rss-parser';
 import { fetchScrapedArticles } from './web-scraper';
 import { fetchJSONAPIArticles } from './json-api-feed';
+import { fetchTelegramArticles } from './telegram-scraper';
 
 const IRAN_FILTER_SOURCES = new Set(['aljazeera', 'bbc']);
 
@@ -53,7 +54,7 @@ async function fetchSource(source: NewsSource): Promise<SourceFetchResult> {
 
   try {
     let articles: Article[];
-    const method = source.rssURL ? 'RSS' : source.jsonAPIURL ? 'JSON_API' : 'SCRAPE';
+    const method = source.rssURL ? 'RSS' : source.jsonAPIURL ? 'JSON_API' : source.fetchMethod === 'telegram' ? 'TELEGRAM' : 'SCRAPE';
     const url = source.rssURL || source.jsonAPIURL || source.baseURL;
     console.log(`📡 [${source.id}] Fetching... method=${method} url=${url}`);
 
@@ -77,6 +78,11 @@ async function fetchSource(source: NewsSource): Promise<SourceFetchResult> {
     else if (source.jsonAPIURL) {
       articles = await fetchJSONAPIArticles(source.jsonAPIURL, source);
       console.log(`✅ [${source.id}] JSON API success: ${articles.length} articles`);
+    }
+    // Telegram
+    else if (source.fetchMethod === 'telegram') {
+      articles = await fetchTelegramArticles(source);
+      console.log(`✅ [${source.id}] Telegram success: ${articles.length} articles`);
     }
     // Scrape only
     else if (source.scrapingConfig) {

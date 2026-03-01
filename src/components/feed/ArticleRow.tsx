@@ -17,6 +17,7 @@ const CATEGORY_GRADIENTS: Record<NewsCategory, string> = {
   proRegime: 'from-red-900 via-red-800 to-orange-900',
   opposition: 'from-blue-900 via-blue-800 to-indigo-900',
   neutral: 'from-yellow-900 via-amber-800 to-orange-900',
+  telegram: 'from-purple-900 via-purple-800 to-indigo-900',
 };
 
 // Global cache so we don't re-fetch og:image for the same URL across re-renders

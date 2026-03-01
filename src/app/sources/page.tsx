@@ -11,6 +11,7 @@ const CATEGORY_TRANSLATION_KEYS: Record<NewsCategory, TranslationKey> = {
   proRegime: 'category.proRegime',
   opposition: 'category.opposition',
   neutral: 'category.neutral',
+  telegram: 'category.telegram',
 };
 
 export default function SourcesPage() {

@@ -228,10 +228,38 @@ export const neutralSources: NewsSource[] = [
   },
 ];
 
+export const telegramSources: NewsSource[] = [
+  {
+    id: 'presstv',
+    name: 'Press TV',
+    category: 'telegram',
+    baseURL: 'https://t.me/s/presstv',
+    isEnabled: true,
+    fetchMethod: 'telegram',
+  },
+  {
+    id: 'irna_en_tg',
+    name: 'IRNA English',
+    category: 'telegram',
+    baseURL: 'https://t.me/s/Irna_en',
+    isEnabled: true,
+    fetchMethod: 'telegram',
+  },
+  {
+    id: 'farsna',
+    name: 'Fars News',
+    category: 'telegram',
+    baseURL: 'https://t.me/s/farsna',
+    isEnabled: true,
+    fetchMethod: 'telegram',
+  },
+];
+
 export const allSources: NewsSource[] = [
   ...proRegimeSources,
   ...oppositionSources,
   ...neutralSources,
+  ...telegramSources,
 ];
 
 export function getSourceById(id: string): NewsSource | undefined {

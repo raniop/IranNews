@@ -1,5 +1,5 @@
 // News category enum matching iOS app
-export type NewsCategory = 'proRegime' | 'opposition' | 'neutral';
+export type NewsCategory = 'proRegime' | 'opposition' | 'neutral' | 'telegram';
 
 export const CATEGORY_CONFIG: Record<NewsCategory, {
   displayName: string;
@@ -29,11 +29,18 @@ export const CATEGORY_CONFIG: Record<NewsCategory, {
     bgColor: 'bg-yellow-500',
     emoji: '🟨',
   },
+  telegram: {
+    displayName: 'Telegram',
+    hebrewName: 'טלגרם',
+    color: 'text-purple-500',
+    bgColor: 'bg-purple-500',
+    emoji: '📨',
+  },
 };
 
-export const ALL_CATEGORIES: NewsCategory[] = ['proRegime', 'opposition', 'neutral'];
+export const ALL_CATEGORIES: NewsCategory[] = ['proRegime', 'opposition', 'neutral', 'telegram'];
 
-export type FetchMethod = 'rss' | 'scrape' | 'jsonAPI' | 'unavailable';
+export type FetchMethod = 'rss' | 'scrape' | 'jsonAPI' | 'telegram' | 'unavailable';
 
 export interface ScrapingConfig {
   articleSelector: string;

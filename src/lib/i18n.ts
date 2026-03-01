@@ -28,6 +28,7 @@ const translations = {
   'category.proRegime': { en: 'Pro-Regime', he: 'תומכי משטר' },
   'category.opposition': { en: 'Opposition', he: 'אופוזיציה' },
   'category.neutral': { en: 'Neutral', he: 'ניטרלי' },
+  'category.telegram': { en: 'Telegram', he: 'טלגרם' },
 
   // Article detail
   'article.back': { en: 'Back', he: 'חזרה' },

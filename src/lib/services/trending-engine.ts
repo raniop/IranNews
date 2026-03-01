@@ -114,6 +114,7 @@ export function computeTrending(articles: Article[]): TrendingTopic[] {
       proRegime: 0,
       opposition: 0,
       neutral: 0,
+      telegram: 0,
     };
     for (const a of cluster.articles) {
       categoryDistribution[a.category]++;
