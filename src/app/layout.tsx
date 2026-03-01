@@ -21,6 +21,19 @@ export const metadata: Metadata = {
   description:
     'Real-time news aggregation from pro-regime, opposition, and neutral sources covering Iran. AI-powered analysis and translation.',
   keywords: ['Iran', 'news', 'aggregator', 'analysis', 'bias', 'translation'],
+  metadataBase: new URL('https://www.iranews.co'),
+  openGraph: {
+    title: 'IranNews',
+    description: 'Real-time news from pro-regime, opposition, and neutral sources covering Iran.',
+    siteName: 'IranNews',
+    locale: 'en_US',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'IranNews',
+    description: 'Real-time news from pro-regime, opposition, and neutral sources covering Iran.',
+  },
 };
 
 export default function RootLayout({
