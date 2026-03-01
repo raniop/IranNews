@@ -447,33 +447,37 @@ function StatusRow({ label, value, active }: { label: string; value: string; act
    Threat Map visualization — SVG with animated arcs
    ═══════════════════════════════════════════ */
 function ThreatMap() {
+  /* Threat arcs: Iran → targets */
   const threatArcs = [
-    { id: 'ir-il-1', path: 'M 540,155 Q 420,90 285,195', dur: '3s', delay: '0s', w: 2 },
-    { id: 'ir-il-2', path: 'M 535,165 Q 400,110 280,200', dur: '3.5s', delay: '0.5s', w: 1.5 },
-    { id: 'ir-il-3', path: 'M 530,160 Q 430,70 290,190', dur: '4s', delay: '1s', w: 1 },
-    { id: 'ir-qa', path: 'M 555,190 Q 520,250 480,295', dur: '2.5s', delay: '0.3s', w: 1.5 },
-    { id: 'ir-kw', path: 'M 530,185 Q 470,220 420,275', dur: '3s', delay: '0.7s', w: 1 },
-    { id: 'ir-in', path: 'M 520,140 Q 450,80 340,80', dur: '3.2s', delay: '1.2s', w: 1 },
+    { id: 'ir-il-1', path: 'M 590,200 Q 440,110 240,250', dur: '3s', delay: '0s', w: 2.5 },
+    { id: 'ir-il-2', path: 'M 580,215 Q 420,130 235,255', dur: '3.5s', delay: '0.5s', w: 2 },
+    { id: 'ir-il-3', path: 'M 575,210 Q 460,90 245,245', dur: '4s', delay: '1s', w: 1.5 },
+    { id: 'ir-qa', path: 'M 610,250 Q 570,340 530,380', dur: '2.5s', delay: '0.3s', w: 2 },
+    { id: 'ir-kw', path: 'M 580,240 Q 500,310 420,355', dur: '3s', delay: '0.7s', w: 1.5 },
+    { id: 'ir-in', path: 'M 560,175 Q 470,100 310,90', dur: '3.2s', delay: '1.2s', w: 1.5 },
+    { id: 'ir-dub', path: 'M 625,260 Q 630,340 640,380', dur: '2.8s', delay: '1.5s', w: 1 },
   ];
 
   const interceptArcs = [
-    { id: 'int-1', path: 'M 290,190 Q 340,140 390,130', dur: '2s', delay: '0.2s' },
-    { id: 'int-2', path: 'M 285,195 Q 320,155 370,145', dur: '2.5s', delay: '0.8s' },
-    { id: 'int-3', path: 'M 290,185 Q 350,120 400,115', dur: '2.2s', delay: '1.5s' },
+    { id: 'int-1', path: 'M 245,248 Q 320,170 430,160', dur: '2s', delay: '0.2s' },
+    { id: 'int-2', path: 'M 240,255 Q 290,190 380,175', dur: '2.5s', delay: '0.8s' },
+    { id: 'int-3', path: 'M 248,243 Q 350,140 450,145', dur: '2.2s', delay: '1.5s' },
+    { id: 'int-4', path: 'M 242,250 Q 360,160 480,165', dur: '2.8s', delay: '2.0s' },
+    { id: 'int-5', path: 'M 246,252 Q 300,200 400,180', dur: '2.3s', delay: '2.5s' },
   ];
 
   return (
     <div className="p-4 h-full min-h-[420px] relative overflow-hidden bg-slate-100 dark:bg-[#060b14]" style={{ borderRadius: 'inherit' }}>
-      {/* Background radial glow */}
-      <div className="absolute inset-0 opacity-0 dark:opacity-40" style={{
-        background: 'radial-gradient(ellipse 60% 50% at 68% 40%, rgba(220,38,38,0.2) 0%, transparent 70%)',
+      {/* Background radial glow - much brighter */}
+      <div className="absolute inset-0 opacity-0 dark:opacity-60" style={{
+        background: 'radial-gradient(ellipse 55% 50% at 62% 42%, rgba(220,38,38,0.25) 0%, transparent 65%)',
       }} />
       <div className="absolute inset-0 opacity-20 dark:opacity-0" style={{
-        background: 'radial-gradient(ellipse 60% 50% at 68% 40%, rgba(220,38,38,0.08) 0%, transparent 70%)',
+        background: 'radial-gradient(ellipse 55% 50% at 62% 42%, rgba(220,38,38,0.1) 0%, transparent 65%)',
       }} />
 
       {/* Map header */}
-      <div className="flex items-center justify-between mb-3 relative z-10">
+      <div className="flex items-center justify-between mb-2 relative z-10">
         <div className="flex items-center gap-2">
           <span className="text-green-500 text-sm">🌍</span>
           <h3 className="text-zinc-600 dark:text-[#bedded] text-xs font-bold tracking-wider uppercase">
@@ -492,156 +496,218 @@ function ThreatMap() {
         </div>
       </div>
 
-      <div className="relative w-full h-[380px]">
-        <svg viewBox="0 0 800 420" className="w-full h-full" xmlns="http://www.w3.org/2000/svg">
+      {/* SVG map - zoomed in tighter */}
+      <div className="relative w-full h-[390px]">
+        <svg viewBox="0 0 800 480" className="w-full h-full" xmlns="http://www.w3.org/2000/svg">
           <defs>
             <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
-              <path d="M 40 0 L 0 0 0 40" fill="none" stroke="rgba(128,128,128,0.08)" strokeWidth="0.5" />
+              <path d="M 40 0 L 0 0 0 40" fill="none" stroke="rgba(128,128,128,0.06)" strokeWidth="0.5" />
             </pattern>
             <filter id="glow-r" x="-50%" y="-50%" width="200%" height="200%">
-              <feGaussianBlur stdDeviation="6" result="blur" />
+              <feGaussianBlur stdDeviation="8" result="blur" />
               <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
             </filter>
             <filter id="glow-b" x="-50%" y="-50%" width="200%" height="200%">
-              <feGaussianBlur stdDeviation="4" result="blur" />
+              <feGaussianBlur stdDeviation="5" result="blur" />
               <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
             </filter>
             <filter id="glow-city" x="-100%" y="-100%" width="300%" height="300%">
-              <feGaussianBlur stdDeviation="3" result="blur" />
+              <feGaussianBlur stdDeviation="4" result="blur" />
               <feMerge><feMergeNode in="blur" /><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
             </filter>
             <radialGradient id="iran-glow" cx="50%" cy="50%" r="50%">
-              <stop offset="0%" stopColor="rgba(220,38,38,0.3)" />
-              <stop offset="40%" stopColor="rgba(220,38,38,0.1)" />
+              <stop offset="0%" stopColor="rgba(220,38,38,0.4)" />
+              <stop offset="35%" stopColor="rgba(220,38,38,0.15)" />
               <stop offset="100%" stopColor="rgba(220,38,38,0)" />
             </radialGradient>
             <radialGradient id="israel-glow" cx="50%" cy="50%" r="50%">
-              <stop offset="0%" stopColor="rgba(96,165,250,0.25)" />
-              <stop offset="60%" stopColor="rgba(96,165,250,0.06)" />
+              <stop offset="0%" stopColor="rgba(96,165,250,0.3)" />
+              <stop offset="60%" stopColor="rgba(96,165,250,0.08)" />
               <stop offset="100%" stopColor="rgba(96,165,250,0)" />
             </radialGradient>
           </defs>
 
-          <rect width="800" height="420" fill="url(#grid)" />
+          <rect width="800" height="480" fill="url(#grid)" />
 
-          {/* Region outlines */}
-          <path d="M 240,55 Q 280,45 320,50 L 370,55 Q 400,50 420,60 L 440,75 Q 420,85 390,85 L 360,80 Q 330,90 300,85 L 260,80 Q 240,70 240,55 Z"
-            fill="rgba(128,128,128,0.04)" stroke="rgba(128,128,128,0.12)" strokeWidth="0.8" />
-          <path d="M 440,80 Q 480,70 530,75 L 580,85 Q 620,90 650,110 L 660,145 Q 670,180 660,210 L 640,240 Q 610,260 580,265 L 540,260 Q 510,250 490,235 L 460,215 Q 440,195 435,170 L 430,140 Q 430,110 440,80 Z"
-            fill="rgba(220,38,38,0.06)" stroke="rgba(220,38,38,0.22)" strokeWidth="1.2" />
-          <path d="M 360,80 Q 380,85 400,100 L 420,120 Q 435,145 440,170 L 445,200 Q 440,220 430,235 L 410,250 Q 390,260 370,255 L 350,240 Q 340,220 335,195 L 330,170 Q 330,140 340,115 L 350,95 Z"
-            fill="rgba(128,128,128,0.03)" stroke="rgba(128,128,128,0.08)" strokeWidth="0.8" />
-          <path d="M 310,220 Q 350,250 400,270 L 450,290 Q 500,300 530,280 L 560,270 Q 550,310 520,340 L 460,360 Q 400,370 350,350 L 310,320 Q 290,290 290,260 L 310,220 Z"
-            fill="rgba(128,128,128,0.02)" stroke="rgba(128,128,128,0.06)" strokeWidth="0.6" />
-          <path d="M 280,165 L 295,160 Q 300,170 298,185 L 295,205 Q 290,215 280,220 L 275,210 Q 270,195 272,180 L 280,165 Z"
-            fill="rgba(96,165,250,0.1)" stroke="rgba(96,165,250,0.25)" strokeWidth="1" />
-          <path d="M 220,175 Q 250,165 270,170 L 275,185 Q 275,210 270,230 L 260,260 Q 240,290 220,300 L 200,290 Q 190,260 190,230 L 195,200 Q 200,185 220,175 Z"
-            fill="rgba(128,128,128,0.02)" stroke="rgba(128,128,128,0.06)" strokeWidth="0.6" />
+          {/* ═══ Country shapes (approximate geography, zoomed to Middle East) ═══ */}
+          {/* Turkey */}
+          <path d="M 160,30 L 220,20 280,15 340,20 380,40 350,55 310,52 280,58 260,65 230,75 200,70 170,55 155,45 Z"
+            fill="rgba(80,120,80,0.12)" stroke="rgba(100,140,100,0.3)" strokeWidth="1" />
+          <path d="M 380,40 L 420,30 460,25 500,35 520,50 490,65 450,70 420,60 390,55 380,40 Z"
+            fill="rgba(80,120,80,0.1)" stroke="rgba(100,140,100,0.25)" strokeWidth="0.8" />
 
-          {/* Territory glow zones */}
-          <ellipse cx="550" cy="165" rx="120" ry="90" fill="url(#iran-glow)">
-            <animate attributeName="opacity" values="0.5;1;0.5" dur="4s" repeatCount="indefinite" />
+          {/* Iran — BIG RED prominent fill */}
+          <path d="M 500,70 L 540,55 590,50 650,65 700,90 740,120 755,170 760,220 740,270 710,300 670,320 630,310 600,290 560,300 520,290 490,270 470,240 460,200 465,160 475,120 490,90 Z"
+            fill="rgba(220,38,38,0.15)" stroke="rgba(220,38,38,0.5)" strokeWidth="1.5" />
+
+          {/* Iraq */}
+          <path d="M 370,70 L 420,60 465,75 490,90 475,120 465,160 460,200 445,220 420,240 390,250 360,235 345,210 340,180 345,150 350,120 355,95 Z"
+            fill="rgba(120,80,60,0.1)" stroke="rgba(140,100,70,0.25)" strokeWidth="0.8" />
+
+          {/* Syria / Lebanon */}
+          <path d="M 265,75 L 300,65 340,70 355,95 350,120 340,140 310,150 280,145 260,130 250,105 255,85 Z"
+            fill="rgba(120,100,80,0.08)" stroke="rgba(140,120,90,0.2)" strokeWidth="0.7" />
+
+          {/* Israel / Palestine — blue tint */}
+          <path d="M 230,160 L 248,150 260,165 258,195 255,220 248,240 235,250 225,235 220,210 222,185 225,170 Z"
+            fill="rgba(96,165,250,0.12)" stroke="rgba(96,165,250,0.35)" strokeWidth="1" />
+
+          {/* Egypt */}
+          <path d="M 80,200 L 130,170 175,165 210,175 220,210 225,250 220,300 200,360 160,400 110,410 70,380 50,330 45,280 55,240 Z"
+            fill="rgba(120,110,80,0.06)" stroke="rgba(140,130,90,0.15)" strokeWidth="0.7" />
+
+          {/* Saudi Arabia — large */}
+          <path d="M 255,260 L 310,240 370,250 420,260 470,260 520,300 560,320 580,360 570,400 530,430 470,450 400,445 330,420 280,390 260,350 250,310 Z"
+            fill="rgba(100,90,70,0.06)" stroke="rgba(120,110,80,0.15)" strokeWidth="0.7" />
+
+          {/* UAE / Qatar / Bahrain area */}
+          <path d="M 570,340 L 620,330 660,340 670,365 655,390 620,395 585,380 575,360 Z"
+            fill="rgba(80,160,120,0.08)" stroke="rgba(100,180,140,0.2)" strokeWidth="0.7" />
+
+          {/* Yemen */}
+          <path d="M 350,430 L 420,450 480,455 520,445 540,430 530,460 480,475 400,475 340,460 Z"
+            fill="rgba(100,90,70,0.04)" stroke="rgba(120,110,80,0.1)" strokeWidth="0.5" />
+
+          {/* Territory glow zones — brighter */}
+          <ellipse cx="610" cy="200" rx="140" ry="110" fill="url(#iran-glow)">
+            <animate attributeName="opacity" values="0.6;1;0.6" dur="4s" repeatCount="indefinite" />
           </ellipse>
-          <ellipse cx="550" cy="165" rx="70" ry="50" fill="none" stroke="rgba(220,38,38,0.15)" strokeWidth="1" strokeDasharray="3 6">
-            <animate attributeName="strokeDashoffset" values="0;18" dur="8s" repeatCount="indefinite" />
+          <ellipse cx="610" cy="200" rx="80" ry="60" fill="none" stroke="rgba(220,38,38,0.2)" strokeWidth="1.2" strokeDasharray="4 8">
+            <animate attributeName="strokeDashoffset" values="0;24" dur="8s" repeatCount="indefinite" />
           </ellipse>
-          <ellipse cx="290" cy="190" rx="40" ry="30" fill="url(#israel-glow)">
-            <animate attributeName="opacity" values="0.4;0.9;0.4" dur="3s" repeatCount="indefinite" />
+          <ellipse cx="245" cy="240" rx="40" ry="35" fill="url(#israel-glow)">
+            <animate attributeName="opacity" values="0.5;1;0.5" dur="3s" repeatCount="indefinite" />
           </ellipse>
 
-          {/* Threat arcs (red) */}
+          {/* ═══ Threat arcs (red) — brighter ═══ */}
           {threatArcs.map((arc) => (
             <g key={arc.id}>
-              <path d={arc.path} fill="none" stroke="rgba(239,68,68,0.18)" strokeWidth={arc.w + 4} filter="url(#glow-r)" />
-              <path d={arc.path} fill="none" stroke="rgba(239,68,68,0.55)" strokeWidth={arc.w} strokeDasharray="8 6" strokeLinecap="round">
+              <path d={arc.path} fill="none" stroke="rgba(239,68,68,0.2)" strokeWidth={arc.w + 6} filter="url(#glow-r)" />
+              <path d={arc.path} fill="none" stroke="rgba(239,68,68,0.65)" strokeWidth={arc.w} strokeDasharray="8 6" strokeLinecap="round">
                 <animate attributeName="strokeDashoffset" values="0;-28" dur={arc.dur} repeatCount="indefinite" />
               </path>
-              <circle r="3.5" fill="#ef4444" filter="url(#glow-r)" opacity="0.9">
+              <circle r="4" fill="#ef4444" filter="url(#glow-r)" opacity="0.95">
                 <animateMotion dur={arc.dur} begin={arc.delay} repeatCount="indefinite" path={arc.path} />
               </circle>
-              <circle r="1.5" fill="#fca5a5">
+              <circle r="2" fill="#fca5a5">
                 <animateMotion dur={arc.dur} begin={arc.delay} repeatCount="indefinite" path={arc.path} />
               </circle>
             </g>
           ))}
 
-          {/* Intercept arcs (blue) */}
+          {/* ═══ Intercept arcs (blue) — brighter, more of them ═══ */}
           {interceptArcs.map((arc) => (
             <g key={arc.id}>
-              <path d={arc.path} fill="none" stroke="rgba(96,165,250,0.15)" strokeWidth="5" filter="url(#glow-b)" />
-              <path d={arc.path} fill="none" stroke="rgba(96,165,250,0.45)" strokeWidth="1.5" strokeDasharray="4 8" strokeLinecap="round">
+              <path d={arc.path} fill="none" stroke="rgba(96,165,250,0.18)" strokeWidth="6" filter="url(#glow-b)" />
+              <path d={arc.path} fill="none" stroke="rgba(96,165,250,0.55)" strokeWidth="1.8" strokeDasharray="4 8" strokeLinecap="round">
                 <animate attributeName="strokeDashoffset" values="0;24" dur={arc.dur} repeatCount="indefinite" />
               </path>
-              <circle r="2.5" fill="#60a5fa" filter="url(#glow-b)" opacity="0.8">
+              <circle r="3" fill="#60a5fa" filter="url(#glow-b)" opacity="0.9">
                 <animateMotion dur={arc.dur} begin={arc.delay} repeatCount="indefinite" path={arc.path} />
               </circle>
-              <circle r="1" fill="#93c5fd">
+              <circle r="1.2" fill="#93c5fd">
                 <animateMotion dur={arc.dur} begin={arc.delay} repeatCount="indefinite" path={arc.path} />
               </circle>
             </g>
           ))}
 
           {/* Impact flashes */}
-          <circle cx="290" cy="193" r="0" fill="rgba(239,68,68,0.6)" filter="url(#glow-r)">
-            <animate attributeName="r" values="0;10;0" dur="3s" begin="2.8s" repeatCount="indefinite" />
-            <animate attributeName="opacity" values="0;0.8;0" dur="3s" begin="2.8s" repeatCount="indefinite" />
+          <circle cx="245" cy="248" r="0" fill="rgba(239,68,68,0.7)" filter="url(#glow-r)">
+            <animate attributeName="r" values="0;12;0" dur="3s" begin="2.8s" repeatCount="indefinite" />
+            <animate attributeName="opacity" values="0;0.9;0" dur="3s" begin="2.8s" repeatCount="indefinite" />
           </circle>
-          <circle cx="480" cy="295" r="0" fill="rgba(239,68,68,0.4)" filter="url(#glow-r)">
-            <animate attributeName="r" values="0;7;0" dur="2.5s" begin="2.1s" repeatCount="indefinite" />
-            <animate attributeName="opacity" values="0;0.6;0" dur="2.5s" begin="2.1s" repeatCount="indefinite" />
+          <circle cx="530" cy="380" r="0" fill="rgba(239,68,68,0.5)" filter="url(#glow-r)">
+            <animate attributeName="r" values="0;8;0" dur="2.5s" begin="2.1s" repeatCount="indefinite" />
+            <animate attributeName="opacity" values="0;0.7;0" dur="2.5s" begin="2.1s" repeatCount="indefinite" />
           </circle>
 
-          {/* Cities */}
-          <circle cx="545" cy="145" r="18" fill="none" stroke="rgba(239,68,68,0.15)" strokeWidth="0.5">
-            <animate attributeName="r" values="18;26;18" dur="4s" repeatCount="indefinite" />
-            <animate attributeName="opacity" values="0.3;0.7;0.3" dur="4s" repeatCount="indefinite" />
+          {/* ═══ Cities — larger, brighter, more prominent ═══ */}
+          {/* Tehran — main threat city */}
+          <circle cx="595" cy="185" r="22" fill="none" stroke="rgba(239,68,68,0.2)" strokeWidth="0.8">
+            <animate attributeName="r" values="22;32;22" dur="4s" repeatCount="indefinite" />
+            <animate attributeName="opacity" values="0.3;0.8;0.3" dur="4s" repeatCount="indefinite" />
           </circle>
-          <circle cx="545" cy="145" r="5" fill="#ef4444" opacity="0.7" filter="url(#glow-city)">
-            <animate attributeName="r" values="4;6;4" dur="2s" repeatCount="indefinite" />
+          <circle cx="595" cy="185" r="6" fill="#ef4444" opacity="0.8" filter="url(#glow-city)">
+            <animate attributeName="r" values="5;7;5" dur="2s" repeatCount="indefinite" />
           </circle>
-          <circle cx="545" cy="145" r="2" fill="#fca5a5" />
-          <text x="545" y="132" textAnchor="middle" fill="#dc2626" fontSize="11" fontFamily="monospace" fontWeight="bold">Tehran</text>
+          <circle cx="595" cy="185" r="2.5" fill="#fca5a5" />
+          <text x="600" y="170" textAnchor="start" fill="#ef4444" fontSize="12" fontFamily="monospace" fontWeight="bold" opacity="0.9">Tehran</text>
 
-          <circle cx="285" cy="193" r="14" fill="none" stroke="rgba(96,165,250,0.2)" strokeWidth="0.5">
-            <animate attributeName="r" values="14;22;14" dur="3s" repeatCount="indefinite" />
+          {/* Tel Aviv — defense city */}
+          <circle cx="240" cy="248" r="16" fill="none" stroke="rgba(96,165,250,0.25)" strokeWidth="0.8">
+            <animate attributeName="r" values="16;26;16" dur="3s" repeatCount="indefinite" />
           </circle>
-          <circle cx="285" cy="193" r="4" fill="#3b82f6" opacity="0.8" filter="url(#glow-city)">
-            <animate attributeName="r" values="3;5;3" dur="2.5s" repeatCount="indefinite" />
+          <circle cx="240" cy="248" r="5" fill="#3b82f6" opacity="0.9" filter="url(#glow-city)">
+            <animate attributeName="r" values="4;6;4" dur="2.5s" repeatCount="indefinite" />
           </circle>
-          <circle cx="285" cy="193" r="1.5" fill="#bfdbfe" />
-          <text x="285" y="213" textAnchor="middle" fill="#2563eb" fontSize="10" fontFamily="monospace" fontWeight="bold">Tel Aviv</text>
+          <circle cx="240" cy="248" r="2" fill="#bfdbfe" />
+          <text x="215" y="270" textAnchor="middle" fill="#60a5fa" fontSize="11" fontFamily="monospace" fontWeight="bold">Tel Aviv</text>
 
-          <circle cx="298" cy="163" r="3" fill="#d97706" opacity="0.6" filter="url(#glow-city)" />
-          <text x="298" y="155" textAnchor="middle" fill="rgba(217,119,6,0.7)" fontSize="9" fontFamily="monospace">Beirut</text>
+          {/* Beirut */}
+          <circle cx="258" cy="195" r="4" fill="#d97706" opacity="0.7" filter="url(#glow-city)" />
+          <text x="240" y="190" textAnchor="end" fill="rgba(217,119,6,0.85)" fontSize="10" fontFamily="monospace" fontWeight="bold">Beirut</text>
 
-          <circle cx="400" cy="155" r="3" fill="#d97706" opacity="0.5" filter="url(#glow-city)" />
-          <text x="400" y="147" textAnchor="middle" fill="rgba(217,119,6,0.6)" fontSize="9" fontFamily="monospace">Baghdad</text>
+          {/* Baghdad */}
+          <circle cx="420" cy="185" r="4" fill="#d97706" opacity="0.65" filter="url(#glow-city)" />
+          <text x="425" y="175" textAnchor="start" fill="rgba(217,119,6,0.75)" fontSize="10" fontFamily="monospace" fontWeight="bold">Baghdad</text>
 
-          <circle cx="340" cy="72" r="3" fill="#16a34a" opacity="0.6" filter="url(#glow-city)" />
-          <circle cx="340" cy="72" r="6" fill="none" stroke="rgba(22,163,74,0.2)" strokeWidth="0.5" />
-          <text x="340" y="64" textAnchor="middle" fill="rgba(22,163,74,0.8)" fontSize="9" fontFamily="monospace">Incirlik</text>
+          {/* Incirlik — US base, green */}
+          <circle cx="310" cy="85" r="4" fill="#16a34a" opacity="0.8" filter="url(#glow-city)" />
+          <circle cx="310" cy="85" r="8" fill="none" stroke="rgba(22,163,74,0.3)" strokeWidth="0.6" />
+          <text x="295" y="78" textAnchor="end" fill="rgba(22,163,74,0.9)" fontSize="10" fontFamily="monospace" fontWeight="bold">Incirlik</text>
 
-          <circle cx="480" cy="295" r="3" fill="#16a34a" opacity="0.5" filter="url(#glow-city)" />
-          <circle cx="480" cy="295" r="6" fill="none" stroke="rgba(22,163,74,0.15)" strokeWidth="0.5" />
-          <text x="480" y="312" textAnchor="middle" fill="rgba(22,163,74,0.7)" fontSize="9" fontFamily="monospace">Al Udeid</text>
+          {/* Al Udeid — US base, green */}
+          <circle cx="535" cy="380" r="4" fill="#16a34a" opacity="0.7" filter="url(#glow-city)" />
+          <circle cx="535" cy="380" r="8" fill="none" stroke="rgba(22,163,74,0.25)" strokeWidth="0.6" />
+          <text x="520" y="375" textAnchor="end" fill="rgba(22,163,74,0.85)" fontSize="10" fontFamily="monospace" fontWeight="bold">Al Udeid</text>
 
-          <circle cx="245" cy="235" r="2.5" fill="#d97706" opacity="0.35" />
-          <text x="245" y="250" textAnchor="middle" fill="rgba(217,119,6,0.4)" fontSize="9" fontFamily="monospace">Cairo</text>
+          {/* Cairo */}
+          <circle cx="160" cy="275" r="3.5" fill="#d97706" opacity="0.5" filter="url(#glow-city)" />
+          <text x="145" y="270" textAnchor="end" fill="rgba(217,119,6,0.6)" fontSize="10" fontFamily="monospace">Cairo</text>
 
-          <circle cx="410" cy="285" r="2.5" fill="#d97706" opacity="0.35" />
-          <text x="410" y="300" textAnchor="middle" fill="rgba(217,119,6,0.4)" fontSize="9" fontFamily="monospace">Riyadh</text>
+          {/* Riyadh */}
+          <circle cx="420" cy="355" r="3.5" fill="#d97706" opacity="0.45" filter="url(#glow-city)" />
+          <text x="405" y="365" textAnchor="end" fill="rgba(217,119,6,0.55)" fontSize="10" fontFamily="monospace">Riyadh</text>
 
-          <circle cx="530" cy="260" r="2.5" fill="#d97706" opacity="0.3" />
-          <text x="543" y="260" textAnchor="start" fill="rgba(217,119,6,0.4)" fontSize="9" fontFamily="monospace">Dubai</text>
+          {/* Dubai — green, US allied */}
+          <circle cx="645" cy="380" r="4" fill="#16a34a" opacity="0.7" filter="url(#glow-city)" />
+          <circle cx="645" cy="380" r="8" fill="none" stroke="rgba(22,163,74,0.2)" strokeWidth="0.5" />
+          <text x="660" y="385" textAnchor="start" fill="rgba(22,163,74,0.8)" fontSize="10" fontFamily="monospace" fontWeight="bold">Dubai</text>
 
-          {/* Coordinate labels */}
-          <text x="12" y="80" fill="rgba(128,128,128,0.15)" fontSize="8" fontFamily="monospace">36°N</text>
-          <text x="12" y="180" fill="rgba(128,128,128,0.15)" fontSize="8" fontFamily="monospace">30°N</text>
-          <text x="12" y="280" fill="rgba(128,128,128,0.15)" fontSize="8" fontFamily="monospace">24°N</text>
-          <text x="12" y="380" fill="rgba(128,128,128,0.15)" fontSize="8" fontFamily="monospace">18°N</text>
-          <text x="200" y="412" fill="rgba(128,128,128,0.15)" fontSize="8" fontFamily="monospace">36°E</text>
-          <text x="400" y="412" fill="rgba(128,128,128,0.15)" fontSize="8" fontFamily="monospace">44°E</text>
-          <text x="600" y="412" fill="rgba(128,128,128,0.15)" fontSize="8" fontFamily="monospace">52°E</text>
+          {/* Isfahan — secondary Iran city */}
+          <circle cx="590" cy="240" r="3" fill="#ef4444" opacity="0.5" filter="url(#glow-city)" />
+          <text x="600" y="250" textAnchor="start" fill="rgba(239,68,68,0.5)" fontSize="9" fontFamily="monospace">Isfahan</text>
+
+          {/* Bandar Abbas */}
+          <circle cx="670" cy="295" r="3" fill="#ef4444" opacity="0.4" filter="url(#glow-city)" />
+          <text x="685" y="300" textAnchor="start" fill="rgba(239,68,68,0.45)" fontSize="9" fontFamily="monospace">B.Abbas</text>
+
+          {/* Intercept markers near Iran — blue dots showing successful intercepts */}
+          <circle cx="520" cy="170" r="3.5" fill="#60a5fa" opacity="0.7" filter="url(#glow-b)">
+            <animate attributeName="opacity" values="0.5;0.9;0.5" dur="3s" repeatCount="indefinite" />
+          </circle>
+          <circle cx="540" cy="195" r="3" fill="#60a5fa" opacity="0.6" filter="url(#glow-b)">
+            <animate attributeName="opacity" values="0.4;0.8;0.4" dur="3.5s" begin="0.5s" repeatCount="indefinite" />
+          </circle>
+          <circle cx="505" cy="200" r="2.5" fill="#60a5fa" opacity="0.5" filter="url(#glow-b)">
+            <animate attributeName="opacity" values="0.3;0.7;0.3" dur="4s" begin="1s" repeatCount="indefinite" />
+          </circle>
+          <circle cx="555" cy="210" r="3" fill="#60a5fa" opacity="0.6" filter="url(#glow-b)">
+            <animate attributeName="opacity" values="0.4;0.8;0.4" dur="3.2s" begin="1.5s" repeatCount="indefinite" />
+          </circle>
+          <circle cx="480" cy="180" r="2.5" fill="#60a5fa" opacity="0.5" filter="url(#glow-b)">
+            <animate attributeName="opacity" values="0.3;0.7;0.3" dur="3.8s" begin="2s" repeatCount="indefinite" />
+          </circle>
+
+          {/* Coordinate labels — more visible */}
+          <text x="12" y="55" fill="rgba(128,128,128,0.2)" fontSize="9" fontFamily="monospace">40°N</text>
+          <text x="12" y="175" fill="rgba(128,128,128,0.2)" fontSize="9" fontFamily="monospace">30°N</text>
+          <text x="12" y="295" fill="rgba(128,128,128,0.2)" fontSize="9" fontFamily="monospace">24°N</text>
+          <text x="12" y="430" fill="rgba(128,128,128,0.2)" fontSize="9" fontFamily="monospace">18°N</text>
+          <text x="150" y="472" fill="rgba(128,128,128,0.2)" fontSize="9" fontFamily="monospace">30°E</text>
+          <text x="330" y="472" fill="rgba(128,128,128,0.2)" fontSize="9" fontFamily="monospace">40°E</text>
+          <text x="510" y="472" fill="rgba(128,128,128,0.2)" fontSize="9" fontFamily="monospace">50°E</text>
+          <text x="680" y="472" fill="rgba(128,128,128,0.2)" fontSize="9" fontFamily="monospace">60°E</text>
         </svg>
       </div>
 
@@ -658,8 +724,8 @@ function ThreatMap() {
       </div>
 
       {/* Coordinate labels along bottom */}
-      <div className="absolute bottom-3 right-4 flex gap-8 text-[8px] font-[family-name:var(--font-share-tech-mono)] text-zinc-300 dark:text-zinc-700">
-        <span>36°E</span><span>44°E</span><span>52°E</span><span>60°E</span><span>68°E</span><span>76°E</span>
+      <div className="absolute bottom-3 right-4 flex gap-6 text-[8px] font-[family-name:var(--font-share-tech-mono)] text-zinc-300 dark:text-zinc-600">
+        <span>30°E</span><span>40°E</span><span>50°E</span><span>60°E</span><span>70°E</span>
       </div>
     </div>
   );
