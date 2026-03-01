@@ -8,6 +8,8 @@ import Link from 'next/link';
 
 interface ArticleRowProps {
   article: Article;
+  hebrewTitle?: string;
+  hebrewDescription?: string;
 }
 
 // Gradient backgrounds per category
@@ -20,7 +22,7 @@ const CATEGORY_GRADIENTS: Record<NewsCategory, string> = {
 // Global cache so we don't re-fetch og:image for the same URL across re-renders
 const ogImageCache = new Map<string, string | null>();
 
-export default function ArticleRow({ article }: ArticleRowProps) {
+export default function ArticleRow({ article, hebrewTitle, hebrewDescription }: ArticleRowProps) {
   const config = CATEGORY_CONFIG[article.category];
   const [imgFailed, setImgFailed] = useState(false);
   const [ogImage, setOgImage] = useState<string | null>(() => {
@@ -112,12 +114,12 @@ export default function ArticleRow({ article }: ArticleRowProps) {
           </div>
 
           <h3 className="text-sm font-semibold text-zinc-900 dark:text-white leading-snug line-clamp-2 group-hover:text-blue-500 dark:group-hover:text-blue-400 transition-colors min-h-[2.5rem]">
-            {article.title}
+            {hebrewTitle || article.title}
           </h3>
 
-          {article.articleDescription && (
+          {(hebrewDescription || article.articleDescription) && (
             <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1.5 line-clamp-2 leading-relaxed">
-              {article.articleDescription}
+              {hebrewDescription || article.articleDescription}
             </p>
           )}
         </div>

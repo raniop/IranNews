@@ -9,6 +9,7 @@ import { relativeTime } from '@/lib/utils';
 import CategoryBadge from '@/components/shared/CategoryBadge';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
 import { useLanguage } from '@/hooks/useLanguage';
+import { useHebrewTitle } from '@/hooks/useHebrewTitles';
 
 export default function ArticleDetailPage() {
   const params = useParams();
@@ -17,6 +18,7 @@ export default function ArticleDetailPage() {
   const id = decodeURIComponent(params.id as string);
   const { articles, isLoading } = useArticles();
   const article = articles.find((a) => a.id === id);
+  const { title: hebrewTitle, description: hebrewDescription } = useHebrewTitle(article);
 
   const [content, setContent] = useState<string | null>(null);
   const [ogImage, setOgImage] = useState<string | null>(null);
@@ -96,7 +98,7 @@ export default function ArticleDetailPage() {
         </div>
 
         <h1 className="text-2xl font-bold text-zinc-900 dark:text-white leading-tight mb-3">
-          {article.title}
+          {hebrewTitle || article.title}
         </h1>
       </div>
 
@@ -133,9 +135,9 @@ export default function ArticleDetailPage() {
           </div>
         ) : (
           <>
-            {article.articleDescription && (
+            {(hebrewDescription || article.articleDescription) && (
               <p className="text-[15px] text-zinc-700 dark:text-zinc-300 leading-relaxed mb-4">
-                {article.articleDescription}
+                {hebrewDescription || article.articleDescription}
               </p>
             )}
             {contentError && (

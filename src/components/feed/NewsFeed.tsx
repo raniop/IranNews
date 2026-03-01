@@ -10,6 +10,7 @@ import LoadingSpinner from '@/components/shared/LoadingSpinner';
 import EmptyState from '@/components/shared/EmptyState';
 import ErrorBanner from '@/components/shared/ErrorBanner';
 import { useLanguage } from '@/hooks/useLanguage';
+import { useHebrewTitles } from '@/hooks/useHebrewTitles';
 
 export default function NewsFeed() {
   const { t } = useLanguage();
@@ -19,6 +20,7 @@ export default function NewsFeed() {
     category !== 'all' ? category : undefined
   );
   const [refreshing, setRefreshing] = useState(false);
+  const { getTitle, getDescription } = useHebrewTitles(articles);
 
   const filtered = useMemo(() => {
     if (!search.trim()) return articles;
@@ -27,9 +29,11 @@ export default function NewsFeed() {
       (a) =>
         a.title.toLowerCase().includes(q) ||
         a.articleDescription?.toLowerCase().includes(q) ||
-        a.sourceID.toLowerCase().includes(q)
+        a.sourceID.toLowerCase().includes(q) ||
+        getTitle(a).toLowerCase().includes(q) ||
+        getDescription(a)?.toLowerCase().includes(q)
     );
-  }, [articles, search]);
+  }, [articles, search, getTitle, getDescription]);
 
   const handleRefresh = async () => {
     setRefreshing(true);
@@ -111,7 +115,12 @@ export default function NewsFeed() {
       {/* Articles grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {filtered.map((article) => (
-          <ArticleRow key={article.id} article={article} />
+          <ArticleRow
+            key={article.id}
+            article={article}
+            hebrewTitle={getTitle(article)}
+            hebrewDescription={getDescription(article)}
+          />
         ))}
       </div>
     </div>
