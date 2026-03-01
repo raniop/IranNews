@@ -88,7 +88,7 @@ export default function ArticleRow({ article, hebrewTitle, hebrewDescription }: 
     >
       <div className="h-full rounded-xl border border-zinc-200 dark:border-zinc-800 overflow-hidden hover:border-zinc-300 dark:hover:border-zinc-700 hover:shadow-lg dark:hover:shadow-zinc-900/50 transition-all">
         {/* Image / Placeholder */}
-        <div className="relative w-full h-40 overflow-hidden">
+        <div className="relative w-full aspect-[16/10] overflow-hidden">
           {showImage ? (
             <img
               src={imageToShow!}
