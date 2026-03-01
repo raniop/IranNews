@@ -1,6 +1,8 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
+import { useLanguage } from '@/hooks/useLanguage';
+import type { TranslationKey } from '@/lib/i18n';
 
 interface Stats {
   liveVisitors: number;
@@ -9,24 +11,25 @@ interface Stats {
   history: { time: string; views: number }[];
 }
 
-const PAGE_LABELS: Record<string, string> = {
-  '/': 'Home / Feed',
-  '/trending': 'Trending',
-  '/sources': 'Sources',
-  '/settings': 'Settings',
-  '/analytics': 'Analytics',
-};
+function formatPage(path: string, t: (key: TranslationKey) => string): string {
+  const PAGE_LABELS: Record<string, string> = {
+    '/': t('nav.feed'),
+    '/trending': t('nav.trending'),
+    '/sources': t('nav.sources'),
+    '/settings': t('nav.settings'),
+    '/analytics': t('nav.analytics'),
+  };
 
-function formatPage(path: string): string {
   if (PAGE_LABELS[path]) return PAGE_LABELS[path];
-  if (path.startsWith('/article/')) return 'Article Detail';
-  if (path.startsWith('/trending/')) return 'Story Comparison';
+  if (path.startsWith('/article/')) return t('nav.articleDetail');
+  if (path.startsWith('/trending/')) return t('nav.storyComparison');
   return path;
 }
 
 export default function AnalyticsPage() {
   const [stats, setStats] = useState<Stats | null>(null);
   const [error, setError] = useState(false);
+  const { t } = useLanguage();
 
   const fetchStats = useCallback(async () => {
     try {
@@ -55,12 +58,12 @@ export default function AnalyticsPage() {
   return (
     <div className="max-w-4xl mx-auto px-4 py-6">
       <h1 className="text-2xl font-bold text-zinc-900 dark:text-white mb-6">
-        Live Analytics
+        {t('analytics.title')}
       </h1>
 
       {error && (
         <div className="bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded-lg p-3 mb-4 text-sm">
-          Failed to load stats
+          {t('analytics.failedLoad')}
         </div>
       )}
 
@@ -74,35 +77,35 @@ export default function AnalyticsPage() {
               <span className="relative inline-flex rounded-full h-3 w-3 bg-white"></span>
             </span>
             <span className="text-sm font-medium text-white/80 uppercase tracking-wide">
-              Live Now
+              {t('analytics.liveNow')}
             </span>
           </div>
           <div className="text-5xl font-black tabular-nums">
             {stats?.liveVisitors ?? '—'}
           </div>
-          <p className="text-sm text-white/70 mt-1">active visitors</p>
+          <p className="text-sm text-white/70 mt-1">{t('analytics.activeVisitors')}</p>
         </div>
 
         {/* Total page views */}
         <div className="bg-white dark:bg-zinc-900 rounded-2xl p-6 border border-zinc-200 dark:border-zinc-800">
           <p className="text-sm font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wide mb-2">
-            Total Page Views
+            {t('analytics.totalPageViews')}
           </p>
           <div className="text-4xl font-bold text-zinc-900 dark:text-white tabular-nums">
             {stats?.totalPageViews?.toLocaleString() ?? '—'}
           </div>
-          <p className="text-xs text-zinc-400 dark:text-zinc-500 mt-1">since server start</p>
+          <p className="text-xs text-zinc-400 dark:text-zinc-500 mt-1">{t('analytics.sinceStart')}</p>
         </div>
 
         {/* Pages count */}
         <div className="bg-white dark:bg-zinc-900 rounded-2xl p-6 border border-zinc-200 dark:border-zinc-800">
           <p className="text-sm font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wide mb-2">
-            Active Pages
+            {t('analytics.activePages')}
           </p>
           <div className="text-4xl font-bold text-zinc-900 dark:text-white tabular-nums">
             {stats ? Object.keys(stats.pageBreakdown).length : '—'}
           </div>
-          <p className="text-xs text-zinc-400 dark:text-zinc-500 mt-1">pages being viewed</p>
+          <p className="text-xs text-zinc-400 dark:text-zinc-500 mt-1">{t('analytics.pagesViewed')}</p>
         </div>
       </div>
 
@@ -110,7 +113,7 @@ export default function AnalyticsPage() {
       {stats && Object.keys(stats.pageBreakdown).length > 0 && (
         <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 p-6 mb-8">
           <h2 className="text-lg font-semibold text-zinc-900 dark:text-white mb-4">
-            Visitors by Page
+            {t('analytics.visitorsByPage')}
           </h2>
           <div className="space-y-3">
             {Object.entries(stats.pageBreakdown)
@@ -120,7 +123,7 @@ export default function AnalyticsPage() {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between mb-1">
                       <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300 truncate">
-                        {formatPage(page)}
+                        {formatPage(page, t)}
                       </span>
                       <span className="text-sm font-bold text-zinc-900 dark:text-white ml-2 tabular-nums">
                         {count}
@@ -145,7 +148,7 @@ export default function AnalyticsPage() {
       {stats && stats.history.length > 1 && (
         <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 p-6">
           <h2 className="text-lg font-semibold text-zinc-900 dark:text-white mb-4">
-            Traffic (Last 24h)
+            {t('analytics.traffic24h')}
           </h2>
           <div className="flex items-end gap-px h-40">
             {stats.history.slice(-48).map((bucket, i) => (
@@ -176,7 +179,7 @@ export default function AnalyticsPage() {
 
       {/* Auto-refresh indicator */}
       <p className="text-center text-xs text-zinc-400 dark:text-zinc-600 mt-6">
-        Auto-refreshing every 3 seconds
+        {t('analytics.autoRefresh')}
       </p>
     </div>
   );

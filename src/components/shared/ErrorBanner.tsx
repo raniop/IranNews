@@ -1,9 +1,14 @@
+'use client';
+
+import { useLanguage } from '@/hooks/useLanguage';
+
 interface ErrorBannerProps {
   message: string;
   onRetry?: () => void;
 }
 
 export default function ErrorBanner({ message, onRetry }: ErrorBannerProps) {
+  const { t } = useLanguage();
   return (
     <div className="mx-4 my-2 p-3 rounded-lg bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900/50 flex items-center justify-between gap-3">
       <div className="flex items-center gap-2 min-w-0">
@@ -19,7 +24,7 @@ export default function ErrorBanner({ message, onRetry }: ErrorBannerProps) {
           onClick={onRetry}
           className="text-xs font-medium text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-200 whitespace-nowrap"
         >
-          Retry
+          {t('common.retry')}
         </button>
       )}
     </div>

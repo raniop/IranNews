@@ -4,11 +4,13 @@ import { useTheme } from 'next-themes';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useLanguage } from '@/hooks/useLanguage';
 
 export default function Header() {
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
   const pathname = usePathname();
+  const { t, lang, setLang } = useLanguage();
 
   useEffect(() => setMounted(true), []);
 
@@ -22,13 +24,22 @@ export default function Header() {
         </Link>
 
         <nav className="hidden md:flex items-center gap-1">
-          <NavLink href="/" label="Feed" active={pathname === '/'} />
-          <NavLink href="/trending" label="Trending" active={pathname === '/trending'} />
-          <NavLink href="/sources" label="Sources" active={pathname === '/sources'} />
-          <NavLink href="/settings" label="Settings" active={pathname === '/settings'} />
+          <NavLink href="/" label={t('nav.feed')} active={pathname === '/'} />
+          <NavLink href="/trending" label={t('nav.trending')} active={pathname === '/trending'} />
+          <NavLink href="/sources" label={t('nav.sources')} active={pathname === '/sources'} />
+          <NavLink href="/settings" label={t('nav.settings')} active={pathname === '/settings'} />
         </nav>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1">
+          {mounted && (
+            <button
+              onClick={() => setLang(lang === 'he' ? 'en' : 'he')}
+              className="px-2 py-1 rounded-lg text-xs font-bold hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+              aria-label="Toggle language"
+            >
+              {lang === 'he' ? 'EN' : 'עב'}
+            </button>
+          )}
           {mounted && (
             <button
               onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}

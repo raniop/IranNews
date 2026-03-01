@@ -9,8 +9,10 @@ import CategoryFilterBar from '@/components/shared/CategoryFilterBar';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
 import EmptyState from '@/components/shared/EmptyState';
 import ErrorBanner from '@/components/shared/ErrorBanner';
+import { useLanguage } from '@/hooks/useLanguage';
 
 export default function NewsFeed() {
+  const { t } = useLanguage();
   const [category, setCategory] = useState<NewsCategory | 'all'>('all');
   const [search, setSearch] = useState('');
   const { articles, total, isLoading, error, refresh } = useArticles(
@@ -41,11 +43,11 @@ export default function NewsFeed() {
       <div className="flex items-center justify-between mb-4">
         <div>
           <h1 className="text-xl font-bold text-zinc-900 dark:text-white">
-            News Feed
+            {t('feed.title')}
           </h1>
           {total > 0 && (
             <p className="text-xs text-zinc-400 dark:text-zinc-500 mt-0.5">
-              {total} articles from all sources
+              {total} {t('feed.articlesCount')}
             </p>
           )}
         </div>
@@ -75,7 +77,7 @@ export default function NewsFeed() {
 
       {/* Search */}
       <div className="mb-3">
-        <SearchBar value={search} onChange={setSearch} />
+        <SearchBar value={search} onChange={setSearch} placeholder={t('feed.search')} />
       </div>
 
       {/* Category filter */}
@@ -85,27 +87,23 @@ export default function NewsFeed() {
 
       {/* Error */}
       {error && (
-        <ErrorBanner message="Failed to load articles" onRetry={handleRefresh} />
+        <ErrorBanner message={t('feed.failedLoad')} onRetry={handleRefresh} />
       )}
 
       {/* Loading */}
       {isLoading && !articles.length && (
-        <LoadingSpinner label="Fetching news from all sources..." />
+        <LoadingSpinner label={t('feed.loading')} />
       )}
 
       {/* Empty */}
       {!isLoading && !error && filtered.length === 0 && (
         <EmptyState
-          title={search ? 'No matching articles' : 'No articles yet'}
-          description={
-            search
-              ? 'Try a different search term'
-              : 'Pull to refresh or check your source settings'
-          }
+          title={search ? t('feed.noMatch') : t('feed.noArticles')}
+          description={search ? t('feed.tryDifferent') : t('feed.pullRefresh')}
           action={
             search
-              ? { label: 'Clear search', onClick: () => setSearch('') }
-              : { label: 'Refresh', onClick: handleRefresh }
+              ? { label: t('feed.clearSearch'), onClick: () => setSearch('') }
+              : { label: t('feed.refresh'), onClick: handleRefresh }
           }
         />
       )}

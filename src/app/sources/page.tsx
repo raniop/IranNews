@@ -3,10 +3,19 @@
 import { allSources } from '@/lib/sources';
 import { CATEGORY_CONFIG, ALL_CATEGORIES, NewsCategory } from '@/lib/types';
 import { useSourceStore } from '@/stores/source-store';
+import { useLanguage } from '@/hooks/useLanguage';
+import { TranslationKey } from '@/lib/i18n';
 import { useState } from 'react';
+
+const CATEGORY_TRANSLATION_KEYS: Record<NewsCategory, TranslationKey> = {
+  proRegime: 'category.proRegime',
+  opposition: 'category.opposition',
+  neutral: 'category.neutral',
+};
 
 export default function SourcesPage() {
   const { disabledSources, toggleSource, enableAll, disableAll } = useSourceStore();
+  const { t } = useLanguage();
   const [filter, setFilter] = useState<NewsCategory | 'all'>('all');
 
   const filtered = filter === 'all'
@@ -22,10 +31,10 @@ export default function SourcesPage() {
       <div className="flex items-center justify-between mb-4">
         <div>
           <h1 className="text-xl font-bold text-zinc-900 dark:text-white">
-            News Sources
+            {t('sources.title')}
           </h1>
           <p className="text-xs text-zinc-400 dark:text-zinc-500 mt-0.5">
-            {enabledCount} of {allSources.filter((s) => s.fetchMethod !== 'unavailable').length} sources enabled
+            {enabledCount} {t('sources.enabledOf')} {allSources.filter((s) => s.fetchMethod !== 'unavailable').length} {t('sources.sourcesEnabled')}
           </p>
         </div>
         <div className="flex gap-2">
@@ -33,13 +42,13 @@ export default function SourcesPage() {
             onClick={enableAll}
             className="text-xs px-3 py-1.5 rounded-lg border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors"
           >
-            Enable All
+            {t('sources.enableAll')}
           </button>
           <button
             onClick={disableAll}
             className="text-xs px-3 py-1.5 rounded-lg border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors"
           >
-            Disable All
+            {t('sources.disableAll')}
           </button>
         </div>
       </div>
@@ -47,14 +56,14 @@ export default function SourcesPage() {
       {/* Category filter */}
       <div className="flex gap-1.5 mb-4 overflow-x-auto scrollbar-hide">
         <FilterChip
-          label="All"
+          label={t('category.all')}
           active={filter === 'all'}
           onClick={() => setFilter('all')}
         />
         {ALL_CATEGORIES.map((cat) => (
           <FilterChip
             key={cat}
-            label={CATEGORY_CONFIG[cat].displayName}
+            label={t(CATEGORY_TRANSLATION_KEYS[cat])}
             active={filter === cat}
             onClick={() => setFilter(cat)}
           />
@@ -85,12 +94,12 @@ export default function SourcesPage() {
                       {source.name}
                     </span>
                     <span className={`text-[10px] px-1.5 py-0.5 rounded-full ${config.bgColor}/15 ${config.color}`}>
-                      {config.displayName}
+                      {t(CATEGORY_TRANSLATION_KEYS[source.category])}
                     </span>
                   </div>
                   <span className="text-[11px] text-zinc-400">
                     {source.fetchMethod === 'unavailable'
-                      ? 'Unavailable (geo-blocked)'
+                      ? t('sources.unavailable')
                       : source.fetchMethod.toUpperCase()}
                   </span>
                 </div>

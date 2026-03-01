@@ -8,10 +8,12 @@ import { CATEGORY_CONFIG } from '@/lib/types';
 import { relativeTime } from '@/lib/utils';
 import CategoryBadge from '@/components/shared/CategoryBadge';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
+import { useLanguage } from '@/hooks/useLanguage';
 
 export default function ArticleDetailPage() {
   const params = useParams();
   const router = useRouter();
+  const { t } = useLanguage();
   const id = decodeURIComponent(params.id as string);
   const { articles, isLoading } = useArticles();
   const article = articles.find((a) => a.id === id);
@@ -19,6 +21,7 @@ export default function ArticleDetailPage() {
   const [content, setContent] = useState<string | null>(null);
   const [ogImage, setOgImage] = useState<string | null>(null);
   const [contentLoading, setContentLoading] = useState(false);
+  const [contentError, setContentError] = useState(false);
 
   const { summary, loading: summaryLoading, summarize } = useAISummarize();
   const { analysis, loading: analysisLoading, analyze } = useAIAnalyze();
@@ -28,6 +31,7 @@ export default function ArticleDetailPage() {
   useEffect(() => {
     if (!article?.url) return;
     setContentLoading(true);
+    setContentError(false);
     fetch('/api/article-content', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -36,28 +40,29 @@ export default function ArticleDetailPage() {
       .then((res) => res.json())
       .then((data) => {
         if (data.content) setContent(data.content);
+        else setContentError(true);
         if (data.ogImage) setOgImage(data.ogImage);
       })
-      .catch(() => {})
+      .catch(() => setContentError(true))
       .finally(() => setContentLoading(false));
   }, [article?.url]);
 
-  if (isLoading) return <LoadingSpinner label="Loading article..." />;
+  if (isLoading) return <LoadingSpinner label={t('article.loading')} />;
 
   if (!article) {
     return (
       <div className="max-w-3xl mx-auto px-4 py-12 text-center">
         <h2 className="text-lg font-semibold text-zinc-900 dark:text-white mb-2">
-          Article not found
+          {t('article.notFound')}
         </h2>
         <p className="text-sm text-zinc-500 mb-4">
-          It may have been removed from the cache.
+          {t('article.removedCache')}
         </p>
         <button
           onClick={() => router.push('/')}
           className="text-sm text-blue-500 hover:text-blue-600"
         >
-          Back to Feed
+          {t('article.backToFeed')}
         </button>
       </div>
     );
@@ -75,7 +80,7 @@ export default function ArticleDetailPage() {
         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <polyline points="15 18 9 12 15 6" />
         </svg>
-        Back
+        {t('article.back')}
       </button>
 
       {/* Article header */}
@@ -113,7 +118,7 @@ export default function ArticleDetailPage() {
       <div className="mb-6">
         {contentLoading ? (
           <div className="py-8">
-            <LoadingSpinner size="sm" label="Loading article content..." />
+            <LoadingSpinner size="sm" label={t('article.loadingContent')} />
           </div>
         ) : content ? (
           <div className="prose prose-zinc dark:prose-invert max-w-none">
@@ -126,11 +131,28 @@ export default function ArticleDetailPage() {
               </p>
             ))}
           </div>
-        ) : article.articleDescription ? (
-          <p className="text-[15px] text-zinc-700 dark:text-zinc-300 leading-relaxed">
-            {article.articleDescription}
-          </p>
-        ) : null}
+        ) : (
+          <>
+            {article.articleDescription && (
+              <p className="text-[15px] text-zinc-700 dark:text-zinc-300 leading-relaxed mb-4">
+                {article.articleDescription}
+              </p>
+            )}
+            {contentError && (
+              <div className="text-center py-4 bg-zinc-50 dark:bg-zinc-900 rounded-lg">
+                <p className="text-sm text-zinc-400 mb-2">{t('article.couldNotLoad')}</p>
+                <a
+                  href={article.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-sm text-blue-500 hover:text-blue-600"
+                >
+                  {t('article.readOn')} {article.sourceID} &rarr;
+                </a>
+              </div>
+            )}
+          </>
+        )}
       </div>
 
       {/* Source link (secondary) */}
@@ -141,7 +163,7 @@ export default function ArticleDetailPage() {
           rel="noopener noreferrer"
           className="inline-flex items-center gap-1.5 text-xs text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 transition-colors"
         >
-          View original on {article.sourceID}
+          {t('article.viewOriginal')} {article.sourceID}
           <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
             <polyline points="15 3 21 3 21 9" />
@@ -153,21 +175,21 @@ export default function ArticleDetailPage() {
       {/* AI Action Buttons */}
       <div className="border-t border-zinc-200 dark:border-zinc-800 pt-4 mb-6">
         <h2 className="text-sm font-semibold text-zinc-900 dark:text-white mb-3">
-          AI Analysis
+          {t('ai.title')}
         </h2>
         <div className="flex flex-wrap gap-2">
           <AIButton
-            label="Summarize"
+            label={t('ai.summarize')}
             loading={summaryLoading}
             onClick={() => summarize({ ...article, content: content || undefined })}
           />
           <AIButton
-            label="Bias Analysis"
+            label={t('ai.biasAnalysis')}
             loading={analysisLoading}
             onClick={() => analyze({ ...article, content: content || undefined })}
           />
           <AIButton
-            label="Translate to Hebrew"
+            label={t('ai.translateHebrew')}
             loading={translateLoading}
             onClick={() =>
               translate(
@@ -181,7 +203,7 @@ export default function ArticleDetailPage() {
 
       {/* AI Results */}
       {summary && (
-        <AIResultCard title="Summary">
+        <AIResultCard title={t('ai.summary')}>
           <p className="text-sm text-zinc-700 dark:text-zinc-300 leading-relaxed">
             {summary}
           </p>
@@ -189,14 +211,14 @@ export default function ArticleDetailPage() {
       )}
 
       {analysis && (
-        <AIResultCard title="Bias Analysis">
+        <AIResultCard title={t('ai.biasResult')}>
           <div className="mb-3">
             <div className="flex justify-between text-xs text-zinc-500 mb-1">
-              <span>Negative</span>
+              <span>{t('ai.negative')}</span>
               <span className="font-medium capitalize">
                 {analysis.sentimentLabel}
               </span>
-              <span>Positive</span>
+              <span>{t('ai.positive')}</span>
             </div>
             <div className="h-2 bg-zinc-200 dark:bg-zinc-700 rounded-full overflow-hidden">
               <div
@@ -234,7 +256,7 @@ export default function ArticleDetailPage() {
       )}
 
       {translation && (
-        <AIResultCard title="Hebrew Translation">
+        <AIResultCard title={t('ai.hebrewTranslation')}>
           <p className="text-sm text-zinc-700 dark:text-zinc-300 leading-relaxed" dir="rtl">
             {translation}
           </p>

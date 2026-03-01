@@ -1,32 +1,34 @@
 'use client';
 
 import { useTrending } from '@/hooks/useTrending';
+import { useLanguage } from '@/hooks/useLanguage';
 import TrendingCard from '@/components/trending/TrendingCard';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
 import EmptyState from '@/components/shared/EmptyState';
 
 export default function TrendingPage() {
   const { topics, articleCount, isLoading } = useTrending();
+  const { t } = useLanguage();
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-4">
       <div className="mb-4">
         <h1 className="text-xl font-bold text-zinc-900 dark:text-white">
-          Trending Topics
+          {t('trending.title')}
         </h1>
         {articleCount > 0 && (
           <p className="text-xs text-zinc-400 dark:text-zinc-500 mt-0.5">
-            Computed from {articleCount} articles across all sources
+            {t('trending.computed')} {articleCount} {t('trending.articlesAcross')}
           </p>
         )}
       </div>
 
-      {isLoading && <LoadingSpinner label="Analyzing trending topics..." />}
+      {isLoading && <LoadingSpinner label={t('trending.analyzing')} />}
 
       {!isLoading && topics.length === 0 && (
         <EmptyState
-          title="No trending topics"
-          description="Trending topics will appear once enough articles are fetched"
+          title={t('trending.noTopics')}
+          description={t('trending.willAppear')}
         />
       )}
 

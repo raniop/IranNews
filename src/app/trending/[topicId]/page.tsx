@@ -2,6 +2,7 @@
 
 import { useParams, useRouter } from 'next/navigation';
 import { useTrending } from '@/hooks/useTrending';
+import { useLanguage } from '@/hooks/useLanguage';
 import { useAICompare } from '@/hooks/useAI';
 import { CATEGORY_CONFIG } from '@/lib/types';
 import ArticleRow from '@/components/feed/ArticleRow';
@@ -10,25 +11,26 @@ import LoadingSpinner from '@/components/shared/LoadingSpinner';
 export default function StoryComparisonPage() {
   const params = useParams();
   const router = useRouter();
+  const { t } = useLanguage();
   const topicId = decodeURIComponent(params.topicId as string);
   const { topics, isLoading } = useTrending();
   const { comparison, loading: compareLoading, compare } = useAICompare();
 
-  const topic = topics.find((t) => t.id === topicId);
+  const topic = topics.find((tp) => tp.id === topicId);
 
-  if (isLoading) return <LoadingSpinner label="Loading topic..." />;
+  if (isLoading) return <LoadingSpinner label={t('trending.analyzing')} />;
 
   if (!topic) {
     return (
       <div className="max-w-3xl mx-auto px-4 py-12 text-center">
         <h2 className="text-lg font-semibold text-zinc-900 dark:text-white mb-2">
-          Topic not found
+          {t('trending.topicNotFound')}
         </h2>
         <button
           onClick={() => router.push('/trending')}
           className="text-sm text-blue-500 hover:text-blue-600"
         >
-          Back to Trending
+          {t('trending.backToTrending')}
         </button>
       </div>
     );
@@ -44,7 +46,7 @@ export default function StoryComparisonPage() {
         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <polyline points="15 18 9 12 15 6" />
         </svg>
-        Trending
+        {t('nav.trending')}
       </button>
 
       {/* Topic header */}
@@ -53,7 +55,7 @@ export default function StoryComparisonPage() {
           {topic.title}
         </h1>
         <p className="text-xs text-zinc-500">
-          {topic.articles.length} articles from {topic.sourceCount} sources
+          {topic.articles.length} {t('trending.articles')} / {topic.sourceCount} {t('trending.sources')}
         </p>
       </div>
 
@@ -66,10 +68,10 @@ export default function StoryComparisonPage() {
         {compareLoading ? (
           <>
             <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-            Analyzing coverage...
+            {t('trending.analyzingCoverage')}
           </>
         ) : (
-          'Compare Coverage Across Sources'
+          t('trending.compare')
         )}
       </button>
 
@@ -80,7 +82,7 @@ export default function StoryComparisonPage() {
           {comparison.topic && (
             <div className="p-4 rounded-xl bg-gradient-to-r from-blue-500/10 to-purple-500/10 border border-blue-200 dark:border-blue-900/50">
               <h3 className="text-xs font-semibold text-blue-600 dark:text-blue-400 uppercase tracking-wider mb-1">
-                Common Topic
+                {t('trending.commonTopic')}
               </h3>
               <p className="text-sm font-medium text-zinc-900 dark:text-white">
                 {comparison.topic}
@@ -92,7 +94,7 @@ export default function StoryComparisonPage() {
           {comparison.keyDifferences && (
             <div className="p-4 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/50">
               <h3 className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-2">
-                Key Differences
+                {t('trending.keyDifferences')}
               </h3>
               <p className="text-sm text-zinc-700 dark:text-zinc-300 leading-relaxed">
                 {comparison.keyDifferences}
@@ -104,7 +106,7 @@ export default function StoryComparisonPage() {
           {comparison.framingAnalysis && comparison.framingAnalysis.length > 0 && (
             <div>
               <h3 className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-2 px-1">
-                Source Framing
+                {t('trending.sourceFraming')}
               </h3>
               <div className="space-y-2">
                 {comparison.framingAnalysis.map((entry, i) => {
@@ -131,7 +133,7 @@ export default function StoryComparisonPage() {
                       </div>
                       {entry.tone && (
                         <p className="text-xs text-zinc-500 mb-0.5">
-                          Tone: {entry.tone}
+                          {t('trending.tone')}: {entry.tone}
                         </p>
                       )}
                       {entry.keyQuote && (
@@ -151,7 +153,7 @@ export default function StoryComparisonPage() {
       {/* Article list */}
       <div className="border-t border-zinc-200 dark:border-zinc-800 pt-4">
         <h2 className="text-sm font-semibold text-zinc-900 dark:text-white mb-2">
-          Related Articles
+          {t('trending.relatedArticles')}
         </h2>
         <div className="divide-y divide-zinc-100 dark:divide-zinc-800/50">
           {topic.articles.map((article) => (

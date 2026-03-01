@@ -2,21 +2,24 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useLanguage } from '@/hooks/useLanguage';
+import { TranslationKey } from '@/lib/i18n';
 
-const navItems = [
-  { href: '/', label: 'Feed', icon: FeedIcon },
-  { href: '/trending', label: 'Trending', icon: TrendingIcon },
-  { href: '/sources', label: 'Sources', icon: SourcesIcon },
-  { href: '/settings', label: 'Settings', icon: SettingsIcon },
+const navItems: { href: string; labelKey: TranslationKey; icon: React.FC<{ active: boolean }> }[] = [
+  { href: '/', labelKey: 'nav.feed', icon: FeedIcon },
+  { href: '/trending', labelKey: 'nav.trending', icon: TrendingIcon },
+  { href: '/sources', labelKey: 'nav.sources', icon: SourcesIcon },
+  { href: '/settings', labelKey: 'nav.settings', icon: SettingsIcon },
 ];
 
 export default function BottomNav() {
   const pathname = usePathname();
+  const { t } = useLanguage();
 
   return (
     <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 border-t border-zinc-200 dark:border-zinc-800 bg-white/90 dark:bg-zinc-950/90 backdrop-blur-md">
       <div className="flex justify-around items-center h-16 px-2">
-        {navItems.map(({ href, label, icon: Icon }) => {
+        {navItems.map(({ href, labelKey, icon: Icon }) => {
           const active = href === '/' ? pathname === '/' : pathname.startsWith(href);
           return (
             <Link
@@ -29,7 +32,7 @@ export default function BottomNav() {
               }`}
             >
               <Icon active={active} />
-              <span className="text-[10px] font-medium">{label}</span>
+              <span className="text-[10px] font-medium">{t(labelKey)}</span>
             </Link>
           );
         })}

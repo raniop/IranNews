@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
 import './globals.css';
 import ThemeProvider from '@/components/layout/ThemeProvider';
+import LanguageProvider from '@/components/layout/LanguageProvider';
 import Header from '@/components/layout/Header';
 import BottomNav from '@/components/layout/BottomNav';
 import VisitorHeartbeat from '@/components/shared/VisitorHeartbeat';
@@ -47,12 +48,14 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-background text-foreground`}
       >
         <ThemeProvider>
-          <div className="min-h-screen flex flex-col">
-            <Header />
-            <main className="flex-1 pb-20 md:pb-0">{children}</main>
-            <BottomNav />
-            <VisitorHeartbeat />
-          </div>
+          <LanguageProvider>
+            <div className="min-h-screen flex flex-col">
+              <Header />
+              <main className="flex-1 pb-20 md:pb-0">{children}</main>
+              <BottomNav />
+              <VisitorHeartbeat />
+            </div>
+          </LanguageProvider>
         </ThemeProvider>
       </body>
     </html>
