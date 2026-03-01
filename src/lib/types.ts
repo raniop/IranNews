@@ -154,3 +154,24 @@ export interface WarPrediction {
   analyzedAt: string;
   articleCount: number;
 }
+
+export interface SentimentDataPoint {
+  id: string;
+  percentage: number;
+  type: 'oppose' | 'support' | 'neutral';
+  description: string;
+  source: string;
+  organization: string;
+  date: string;
+  url: string;
+  sampleSize?: number;
+}
+
+export interface SentimentIndex {
+  lastUpdated: string;
+  oppose: { average: number; dataPoints: number };
+  support: { average: number; dataPoints: number };
+  neutral: { average: number; dataPoints: number };
+  dataPoints: SentimentDataPoint[];
+  disclaimer: string;
+}

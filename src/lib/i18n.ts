@@ -157,6 +157,24 @@ const translations = {
   'arsenal.depleted': { en: 'depleted since June 2025', he: 'דולדלו מאז יוני 2025' },
   'arsenal.peakNote': { en: 'Peak', he: 'שיא' },
 
+  // Sentiment Index
+  'sentiment.title': { en: 'Population Sentiment Index', he: 'מדד סנטימנט האוכלוסייה' },
+  'sentiment.subtitle': { en: 'Iran', he: 'איראן' },
+  'sentiment.oppose': { en: 'Want Change', he: 'רוצים שינוי' },
+  'sentiment.support': { en: 'Support Regime', he: 'תומכים במשטר' },
+  'sentiment.neutral': { en: 'Neutral', he: 'ניטרלי' },
+  'sentiment.basedOn': { en: 'Based on', he: 'מבוסס על' },
+  'sentiment.surveys': { en: 'verified surveys & research studies', he: 'סקרים ומחקרים מאומתים' },
+  'sentiment.sources': { en: 'Sources', he: 'מקורות' },
+  'sentiment.loading': { en: 'Loading sentiment data...', he: 'טוען נתוני סנטימנט...' },
+  'sentiment.error': { en: 'Could not load sentiment data', he: 'לא ניתן לטעון נתוני סנטימנט' },
+  'sentiment.infoTitle': { en: 'About This Index', he: 'אודות מדד זה' },
+  'sentiment.infoDesc': {
+    en: 'Based exclusively on verified numerical data from surveys, research studies, and statistically valid sources. Does not use article counts, media sentiment, or text analysis.',
+    he: 'מבוסס באופן בלעדי על נתונים מספריים מאומתים מסקרים, מחקרים ומקורות תקפים סטטיסטית. לא משתמש בספירת כתבות, סנטימנט תקשורתי או ניתוח טקסט.',
+  },
+  'sentiment.dataPoints': { en: 'data points', he: 'נקודות נתונים' },
+
   // Common
   'common.retry': { en: 'Retry', he: 'נסה שוב' },
 } as const;
