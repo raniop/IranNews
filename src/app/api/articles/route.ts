@@ -8,6 +8,7 @@ import {
   hasCachedArticles,
   isBackgroundRefreshing,
   setBackgroundRefreshing,
+  getLastFetchISO,
 } from '@/lib/cache';
 import { preTranslateArticles } from '@/lib/services/title-translator';
 
@@ -52,7 +53,7 @@ export async function GET(request: Request) {
       articles,
       total: articles.length,
       failedSources: [],
-      fetchedAt: new Date().toISOString(),
+      fetchedAt: getLastFetchISO() || new Date().toISOString(),
       cached: true,
     });
   }
@@ -69,7 +70,7 @@ export async function GET(request: Request) {
       articles,
       total: articles.length,
       failedSources: [],
-      fetchedAt: new Date().toISOString(),
+      fetchedAt: getLastFetchISO() || new Date().toISOString(),
       cached: true,
       refreshing: true,
     });

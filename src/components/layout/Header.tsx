@@ -31,7 +31,8 @@ export default function Header() {
           <NavLink href="/settings" label={t('nav.settings')} active={pathname === '/settings'} />
         </nav>
 
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-2">
+          {mounted && <LiveClock lang={lang} />}
           {mounted && (
             <button
               onClick={() => setLang(lang === 'he' ? 'en' : 'he')}
@@ -57,6 +58,44 @@ export default function Header() {
         </div>
       </div>
     </header>
+  );
+}
+
+function LiveClock({ lang }: { lang: string }) {
+  const [now, setNow] = useState(new Date());
+
+  useEffect(() => {
+    const timer = setInterval(() => setNow(new Date()), 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const locale = lang === 'he' ? 'he-IL' : 'en-US';
+  const timeZone = 'Asia/Jerusalem';
+
+  const time = now.toLocaleTimeString(locale, {
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    timeZone,
+    hour12: false,
+  });
+
+  const date = now.toLocaleDateString(locale, {
+    weekday: 'short',
+    day: 'numeric',
+    month: 'short',
+    timeZone,
+  });
+
+  return (
+    <div className="hidden sm:flex flex-col items-end text-xs leading-tight" dir={lang === 'he' ? 'rtl' : 'ltr'}>
+      <span className="font-mono font-bold text-zinc-800 dark:text-zinc-200 tabular-nums">
+        {time}
+      </span>
+      <span className="text-zinc-400 dark:text-zinc-500">
+        {date}
+      </span>
+    </div>
   );
 }
 

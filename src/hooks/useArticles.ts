@@ -17,6 +17,7 @@ export function useArticles(category?: string) {
     articles: Article[];
     total: number;
     cached: boolean;
+    fetchedAt?: string;
   }>(url, fetcher, {
     revalidateOnFocus: false,
     dedupingInterval: 60000,
@@ -34,6 +35,7 @@ export function useArticles(category?: string) {
     articles: data?.articles ?? [],
     total: data?.total ?? 0,
     cached: data?.cached ?? false,
+    fetchedAt: data?.fetchedAt ?? null,
     isLoading,
     error,
     refresh,

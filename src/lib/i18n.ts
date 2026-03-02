@@ -175,6 +175,12 @@ const translations = {
   },
   'sentiment.dataPoints': { en: 'data points', he: 'נקודות נתונים' },
 
+  // Time
+  'time.lastUpdated': { en: 'Updated', he: 'עודכן' },
+  'time.justNow': { en: 'just now', he: 'עכשיו' },
+  'time.minutesAgo': { en: 'min ago', he: 'דק׳ לפני' },
+  'time.hoursAgo': { en: 'hr ago', he: 'שע׳ לפני' },
+
   // Common
   'common.retry': { en: 'Retry', he: 'נסה שוב' },
 } as const;

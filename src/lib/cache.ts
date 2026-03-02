@@ -38,6 +38,14 @@ export function setBackgroundRefreshing(value: boolean): void {
   isRefreshing = value;
 }
 
+export function getLastFetchTime(): number {
+  return lastFetchTime;
+}
+
+export function getLastFetchISO(): string | null {
+  return lastFetchTime > 0 ? new Date(lastFetchTime).toISOString() : null;
+}
+
 export function clearCache(): void {
   articleCache = [];
   lastFetchTime = 0;

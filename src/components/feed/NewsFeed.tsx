@@ -20,7 +20,7 @@ export default function NewsFeed() {
   const { t } = useLanguage();
   const [category, setCategory] = useState<NewsCategory | 'all'>('all');
   const [search, setSearch] = useState('');
-  const { articles, total, isLoading, error, refresh } = useArticles(
+  const { articles, total, isLoading, error, refresh, fetchedAt } = useArticles(
     category !== 'all' ? category : undefined
   );
   const [refreshing, setRefreshing] = useState(false);
@@ -97,11 +97,16 @@ export default function NewsFeed() {
           <h1 className="text-xl font-bold text-zinc-900 dark:text-white">
             {t('feed.title')}
           </h1>
-          {total > 0 && (
-            <p className="text-xs text-zinc-400 dark:text-zinc-500 mt-0.5">
-              {filtered.length} {t('feed.articlesCount')}
-            </p>
-          )}
+          <div className="flex items-center gap-2 mt-0.5">
+            {total > 0 && (
+              <p className="text-xs text-zinc-400 dark:text-zinc-500">
+                {filtered.length} {t('feed.articlesCount')}
+              </p>
+            )}
+            {fetchedAt && (
+              <LastUpdated fetchedAt={fetchedAt} />
+            )}
+          </div>
         </div>
         <button
           onClick={handleRefresh}
@@ -205,5 +210,38 @@ export default function NewsFeed() {
         </div>
       )}
     </div>
+  );
+}
+
+function LastUpdated({ fetchedAt }: { fetchedAt: string }) {
+  const { t } = useLanguage();
+  const [label, setLabel] = useState('');
+
+  useEffect(() => {
+    const update = () => {
+      const diff = Date.now() - new Date(fetchedAt).getTime();
+      const mins = Math.floor(diff / 60000);
+      const hours = Math.floor(diff / 3600000);
+
+      if (mins < 1) {
+        setLabel(`${t('time.lastUpdated')} ${t('time.justNow')}`);
+      } else if (mins < 60) {
+        setLabel(`${t('time.lastUpdated')} ${mins} ${t('time.minutesAgo')}`);
+      } else {
+        setLabel(`${t('time.lastUpdated')} ${hours} ${t('time.hoursAgo')}`);
+      }
+    };
+
+    update();
+    const timer = setInterval(update, 30000); // Update every 30s
+    return () => clearInterval(timer);
+  }, [fetchedAt, t]);
+
+  if (!label) return null;
+
+  return (
+    <span className="text-[10px] text-zinc-300 dark:text-zinc-600">
+      • {label}
+    </span>
   );
 }
