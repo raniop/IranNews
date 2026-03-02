@@ -55,13 +55,13 @@ export async function fetchAllSources(
   const sources = sourcesToFetch || getEnabledSources();
   const startTime = Date.now();
 
-  // Wrap each source fetch with its own 8s timeout (down from 15s)
+  // Wrap each source fetch with its own 12s timeout (safety net)
   const results = await Promise.allSettled(
     sources.map(source =>
       Promise.race([
         fetchSource(source),
         new Promise<SourceFetchResult>((_, reject) =>
-          setTimeout(() => reject(new Error('Source timeout (8s)')), 8000)
+          setTimeout(() => reject(new Error('Source timeout (12s)')), 12000)
         ),
       ])
     )
