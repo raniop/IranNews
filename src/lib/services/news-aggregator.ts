@@ -53,10 +53,21 @@ export async function fetchAllSources(
   sourcesToFetch?: NewsSource[]
 ): Promise<{ articles: Article[]; failedSources: string[] }> {
   const sources = sourcesToFetch || getEnabledSources();
+  const startTime = Date.now();
 
+  // Wrap each source fetch with its own 8s timeout (down from 15s)
   const results = await Promise.allSettled(
-    sources.map(source => fetchSource(source))
+    sources.map(source =>
+      Promise.race([
+        fetchSource(source),
+        new Promise<SourceFetchResult>((_, reject) =>
+          setTimeout(() => reject(new Error('Source timeout (8s)')), 8000)
+        ),
+      ])
+    )
   );
+
+  console.log(`⏱️ All sources fetched in ${Date.now() - startTime}ms`);
 
   const allArticles: Article[] = [];
   const failedSources: string[] = [];

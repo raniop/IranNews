@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { translateBatch, getCachedTranslations } from '@/lib/services/title-translator';
+import { translateBatch, getCachedTranslations, getAllCachedTranslations } from '@/lib/services/title-translator';
 
 export const maxDuration = 60;
 
@@ -11,8 +11,8 @@ export async function POST(request: Request) {
       return NextResponse.json({ translations: {} });
     }
 
-    // Limit batch size to 25
-    const batch = items.slice(0, 25);
+    // Increased batch size to 50 for faster throughput
+    const batch = items.slice(0, 50);
     const translations = await translateBatch(batch);
     return NextResponse.json({ translations });
   } catch (error) {
@@ -22,9 +22,21 @@ export async function POST(request: Request) {
   }
 }
 
-// GET: get cached translations by IDs (comma-separated)
+// GET: get cached translations
+// ?ids=id1,id2,... → specific IDs
+// ?all=true → all cached translations (for client hydration)
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
+
+  // Return ALL cached translations (for instant Hebrew hydration)
+  if (searchParams.get('all') === 'true') {
+    const translations = getAllCachedTranslations();
+    return NextResponse.json({
+      translations,
+      count: Object.keys(translations).length,
+    });
+  }
+
   const ids = searchParams.get('ids')?.split(',').filter(Boolean) || [];
   const translations = getCachedTranslations(ids);
   return NextResponse.json({ translations });

@@ -16,7 +16,7 @@ export async function fetchJSONAPIArticles(
 ): Promise<Article[]> {
   const res = await fetch(apiURL, {
     headers: { 'User-Agent': 'IranNewsWeb/1.0' },
-    signal: AbortSignal.timeout(15000),
+    signal: AbortSignal.timeout(7000),
   });
 
   if (!res.ok) {

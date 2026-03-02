@@ -3,9 +3,14 @@ import { Article } from './types';
 // In-memory article cache (persists across warm serverless invocations)
 let articleCache: Article[] = [];
 let lastFetchTime: number = 0;
+let isRefreshing = false;
 
 export function getCachedArticles(): Article[] {
   return articleCache;
+}
+
+export function hasCachedArticles(): boolean {
+  return articleCache.length > 0;
 }
 
 export function setCachedArticles(articles: Article[]): void {
@@ -19,6 +24,18 @@ export function getCacheAge(): number {
 
 export function isCacheValid(maxAgeMs: number = 5 * 60 * 1000): boolean {
   return articleCache.length > 0 && getCacheAge() < maxAgeMs;
+}
+
+export function isCacheStale(maxAgeMs: number = 5 * 60 * 1000): boolean {
+  return articleCache.length > 0 && getCacheAge() >= maxAgeMs;
+}
+
+export function isBackgroundRefreshing(): boolean {
+  return isRefreshing;
+}
+
+export function setBackgroundRefreshing(value: boolean): void {
+  isRefreshing = value;
 }
 
 export function clearCache(): void {

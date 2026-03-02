@@ -11,7 +11,7 @@ export async function fetchTelegramArticles(source: NewsSource): Promise<Article
     headers: {
       'User-Agent': 'Mozilla/5.0 (compatible; IranNewsWeb/1.0)',
     },
-    signal: AbortSignal.timeout(15000),
+    signal: AbortSignal.timeout(7000),
   });
 
   if (!res.ok) {

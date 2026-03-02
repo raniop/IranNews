@@ -11,6 +11,7 @@ interface Translation {
 
 // Global client-side cache persists across re-renders
 const clientCache = new Map<string, Translation>();
+let serverCacheLoaded = false;
 
 export function useHebrewTitles(articles: Article[]) {
   const { lang } = useLanguage();
@@ -18,13 +19,41 @@ export function useHebrewTitles(articles: Article[]) {
   const fetchingRef = useRef(false);
   const lastBatchRef = useRef('');
 
+  // Step 1: On Hebrew mode, hydrate from server pre-translated cache
+  useEffect(() => {
+    if (lang !== 'he' || serverCacheLoaded) return;
+
+    fetch('/api/translate-titles?all=true')
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.translations) {
+          for (const [id, t] of Object.entries(data.translations)) {
+            clientCache.set(id, t as Translation);
+          }
+          serverCacheLoaded = true;
+
+          // Immediately apply server translations
+          if (articles.length > 0) {
+            const cached: Record<string, Translation> = {};
+            for (const a of articles) {
+              const t = clientCache.get(a.id);
+              if (t) cached[a.id] = t;
+            }
+            if (Object.keys(cached).length > 0) {
+              setTranslations(cached);
+            }
+          }
+        }
+      })
+      .catch(() => {});
+  }, [lang, articles]);
+
+  // Step 2: Translate what server didn't pre-translate
   const fetchTranslations = useCallback(async (items: Article[]) => {
     if (fetchingRef.current) return;
 
-    // Find articles not yet translated
     const untranslated = items.filter((a) => !clientCache.has(a.id));
     if (untranslated.length === 0) {
-      // All cached - just update state from cache
       const cached: Record<string, Translation> = {};
       for (const a of items) {
         const t = clientCache.get(a.id);
@@ -36,11 +65,11 @@ export function useHebrewTitles(articles: Article[]) {
 
     fetchingRef.current = true;
 
-    // Build batches of 25 (matches API limit)
+    // Build batches of 50 (up from 25 - fewer API calls)
     const batches: Array<{ id: string; title: string; description?: string }[]> = [];
-    for (let i = 0; i < untranslated.length; i += 25) {
+    for (let i = 0; i < untranslated.length; i += 50) {
       batches.push(
-        untranslated.slice(i, i + 25).map((a) => ({
+        untranslated.slice(i, i + 50).map((a) => ({
           id: a.id,
           title: a.title,
           description: a.articleDescription,
@@ -48,7 +77,6 @@ export function useHebrewTitles(articles: Article[]) {
       );
     }
 
-    // Helper to update state from cache
     const updateState = () => {
       const result: Record<string, Translation> = {};
       for (const a of items) {
@@ -58,7 +86,6 @@ export function useHebrewTitles(articles: Article[]) {
       setTranslations(result);
     };
 
-    // Send all batches in parallel, update state as each completes
     await Promise.all(
       batches.map(async (batch) => {
         try {
@@ -91,15 +118,14 @@ export function useHebrewTitles(articles: Article[]) {
       return;
     }
 
-    // Build batch key to avoid re-fetching the same set
     const batchKey = articles
-      .slice(0, 30)
+      .slice(0, 50)
       .map((a) => a.id)
       .join(',');
     if (batchKey === lastBatchRef.current) return;
     lastBatchRef.current = batchKey;
 
-    // First set whatever we have cached
+    // Set whatever we already have cached (instant from server pre-translation)
     const cached: Record<string, Translation> = {};
     for (const a of articles) {
       const t = clientCache.get(a.id);
@@ -109,11 +135,10 @@ export function useHebrewTitles(articles: Article[]) {
       setTranslations(cached);
     }
 
-    // Then fetch missing translations (first 30 articles visible)
-    fetchTranslations(articles.slice(0, 30));
+    // Fetch only what's missing
+    fetchTranslations(articles.slice(0, 50));
   }, [articles, lang, fetchTranslations]);
 
-  // Helper to get translated title for an article
   const getTitle = useCallback(
     (article: Article): string => {
       if (lang === 'he' && translations[article.id]?.title) {
@@ -148,14 +173,12 @@ export function useHebrewTitle(article: Article | undefined) {
       return;
     }
 
-    // Check cache first
     const cached = clientCache.get(article.id);
     if (cached) {
       setTranslation(cached);
       return;
     }
 
-    // Fetch translation
     fetch('/api/translate-titles', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },

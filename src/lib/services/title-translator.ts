@@ -1,5 +1,6 @@
 import { sendClaudeMessage, parseClaudeJSON } from './claude-api';
 import { CLAUDE_MODEL_FAST } from '../constants';
+import { Article } from '../types';
 
 // In-memory cache for Hebrew translations: articleId -> { title, description }
 const hebrewCache = new Map<string, { title: string; description?: string }>();
@@ -20,6 +21,49 @@ export function getCachedTranslations(ids: string[]): Record<string, { title: st
   return result;
 }
 
+export function getAllCachedTranslations(): Record<string, { title: string; description?: string }> {
+  const result: Record<string, { title: string; description?: string }> = {};
+  for (const [id, t] of hebrewCache) {
+    result[id] = t;
+  }
+  return result;
+}
+
+/**
+ * Pre-translate articles to Hebrew server-side.
+ * Called after fetching articles so Hebrew translations are ready
+ * before the client even requests them.
+ */
+export async function preTranslateArticles(articles: Article[]): Promise<void> {
+  // Filter out already translated
+  const untranslated = articles.filter(a => !hebrewCache.has(a.id) && !pendingIds.has(a.id));
+  if (untranslated.length === 0) return;
+
+  console.log(`🌐 [translate] Pre-translating ${untranslated.length} articles to Hebrew`);
+  const startTime = Date.now();
+
+  // Split into batches of 15 — run in parallel for speed
+  // (smaller batches = faster per-call response from Claude)
+  const batches: Article[][] = [];
+  for (let i = 0; i < untranslated.length; i += 15) {
+    batches.push(untranslated.slice(i, i + 15));
+  }
+
+  // Translate all batches in parallel
+  await Promise.allSettled(
+    batches.map(async (batch) => {
+      const items = batch.map(a => ({
+        id: a.id,
+        title: a.title,
+        description: a.articleDescription,
+      }));
+      await translateBatch(items);
+    })
+  );
+
+  console.log(`🌐 [translate] Pre-translation done in ${Date.now() - startTime}ms (${hebrewCache.size} total cached)`);
+}
+
 export async function translateBatch(
   items: { id: string; title: string; description?: string }[]
 ): Promise<Record<string, { title: string; description?: string }>> {
@@ -38,25 +82,17 @@ export async function translateBatch(
   }
 
   try {
-    // Build the prompt with numbered items for Claude
-    const numbered = toTranslate.map((item, i) => {
-      let text = `${i + 1}. TITLE: ${item.title}`;
-      if (item.description) {
-        text += `\nDESC: ${item.description}`;
-      }
-      return text;
-    });
+    // Build compact prompt
+    const numbered = toTranslate.map((item, i) =>
+      `${i + 1}. ${item.title}${item.description ? ` | ${item.description.substring(0, 80)}` : ''}`
+    );
 
-    const systemPrompt = `You are a professional translator. Translate the following news article titles and descriptions to Hebrew.
-Return ONLY a JSON array where each element has: {"i": number, "title": "Hebrew title", "description": "Hebrew description or null"}
-The "i" field is the 1-based index of the item.
-Keep translations natural and concise. Preserve proper nouns as-is when appropriate.
-Return ONLY valid JSON, no other text.`;
+    const systemPrompt = `Translate these news items to Hebrew. Return JSON array: [{"i":1,"t":"title","d":"desc or null"},...] ONLY.`;
 
-    const userMessage = `Translate these ${toTranslate.length} items to Hebrew:\n\n${numbered.join('\n\n')}`;
+    const userMessage = numbered.join('\n');
 
     const response = await sendClaudeMessage(systemPrompt, userMessage, 4096, { model: CLAUDE_MODEL_FAST });
-    const parsed = parseClaudeJSON<Array<{ i: number; title: string; description?: string | null }>>(response);
+    const parsed = parseClaudeJSON<Array<{ i: number; t: string; d?: string | null }>>(response);
 
     if (parsed && Array.isArray(parsed)) {
       for (const entry of parsed) {
@@ -64,8 +100,8 @@ Return ONLY valid JSON, no other text.`;
         if (idx >= 0 && idx < toTranslate.length) {
           const item = toTranslate[idx];
           const translation = {
-            title: entry.title,
-            description: entry.description || undefined,
+            title: entry.t,
+            description: entry.d || undefined,
           };
           hebrewCache.set(item.id, translation);
         }

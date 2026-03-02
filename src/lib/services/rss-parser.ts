@@ -36,7 +36,7 @@ export async function fetchRSSArticles(
     headers: {
       'User-Agent': 'Mozilla/5.0 (compatible; IranNewsBot/1.0)',
     },
-    signal: AbortSignal.timeout(15000),
+    signal: AbortSignal.timeout(7000),
   });
 
   if (!res.ok) {

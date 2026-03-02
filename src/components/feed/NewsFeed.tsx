@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect, useRef, useCallback } from 'react';
 import { useArticles } from '@/hooks/useArticles';
 import { NewsCategory } from '@/lib/types';
 import ArticleRow from './ArticleRow';
@@ -14,6 +14,8 @@ import SentimentIndexCard from '@/components/shared/SentimentIndexCard';
 import { useLanguage } from '@/hooks/useLanguage';
 import { useHebrewTitles } from '@/hooks/useHebrewTitles';
 
+const PAGE_SIZE = 20;
+
 export default function NewsFeed() {
   const { t } = useLanguage();
   const [category, setCategory] = useState<NewsCategory | 'all'>('all');
@@ -22,8 +24,14 @@ export default function NewsFeed() {
     category !== 'all' ? category : undefined
   );
   const [refreshing, setRefreshing] = useState(false);
-  const { getTitle, getDescription } = useHebrewTitles(articles);
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
+  const loadMoreRef = useRef<HTMLDivElement>(null);
 
+  // Only translate visible articles (not the full list)
+  const visibleArticles = useMemo(() => articles.slice(0, visibleCount), [articles, visibleCount]);
+  const { getTitle, getDescription } = useHebrewTitles(visibleArticles);
+
+  // Filter articles
   const filtered = useMemo(() => {
     if (!search.trim()) return articles;
     const q = search.toLowerCase();
@@ -37,8 +45,46 @@ export default function NewsFeed() {
     );
   }, [articles, search, getTitle, getDescription]);
 
+  // Paginated view
+  const displayedArticles = useMemo(
+    () => filtered.slice(0, visibleCount),
+    [filtered, visibleCount]
+  );
+
+  const hasMore = visibleCount < filtered.length;
+
+  // Reset visible count when category or search changes
+  useEffect(() => {
+    setVisibleCount(PAGE_SIZE);
+  }, [category, search]);
+
+  // Infinite scroll: IntersectionObserver on sentinel div
+  const loadMore = useCallback(() => {
+    if (hasMore) {
+      setVisibleCount((prev) => prev + PAGE_SIZE);
+    }
+  }, [hasMore]);
+
+  useEffect(() => {
+    const el = loadMoreRef.current;
+    if (!el) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          loadMore();
+        }
+      },
+      { rootMargin: '400px' } // Start loading 400px before reaching bottom
+    );
+
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [loadMore]);
+
   const handleRefresh = async () => {
     setRefreshing(true);
+    setVisibleCount(PAGE_SIZE);
     await refresh();
     setRefreshing(false);
   };
@@ -53,7 +99,7 @@ export default function NewsFeed() {
           </h1>
           {total > 0 && (
             <p className="text-xs text-zinc-400 dark:text-zinc-500 mt-0.5">
-              {total} {t('feed.articlesCount')}
+              {filtered.length} {t('feed.articlesCount')}
             </p>
           )}
         </div>
@@ -124,7 +170,7 @@ export default function NewsFeed() {
 
       {/* Articles grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        {filtered.map((article) => (
+        {displayedArticles.map((article) => (
           <ArticleRow
             key={article.id}
             article={article}
@@ -133,6 +179,31 @@ export default function NewsFeed() {
           />
         ))}
       </div>
+
+      {/* Infinite scroll sentinel */}
+      {hasMore && (
+        <div ref={loadMoreRef} className="flex justify-center py-6">
+          <div className="flex items-center gap-2 text-sm text-zinc-400">
+            <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
+              <circle
+                className="opacity-25"
+                cx="12"
+                cy="12"
+                r="10"
+                stroke="currentColor"
+                strokeWidth="4"
+                fill="none"
+              />
+              <path
+                className="opacity-75"
+                fill="currentColor"
+                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+              />
+            </svg>
+            {t('feed.loading')}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
