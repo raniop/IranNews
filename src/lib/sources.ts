@@ -448,6 +448,15 @@ export const telegramSources: NewsSource[] = [
     isEnabled: true,
     fetchMethod: 'telegram',
   },
+  // Iran war witness channel
+  {
+    id: 'tg_wfwitness',
+    name: 'War Front Witness',
+    category: 'telegram',
+    baseURL: 'https://t.me/s/wfwitness_ir',
+    isEnabled: true,
+    fetchMethod: 'telegram',
+  },
   // OSINT / Military intelligence channels
   {
     id: 'tg_abuali',

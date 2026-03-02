@@ -4,9 +4,39 @@ import { fetchRSSArticles } from './rss-parser';
 import { fetchScrapedArticles } from './web-scraper';
 import { fetchJSONAPIArticles } from './json-api-feed';
 import { fetchTelegramArticles } from './telegram-scraper';
+import { IRAN_KEYWORDS } from '../constants';
 
-// Sources with general feeds that need Iran keyword filtering
-const IRAN_FILTER_SOURCES = new Set(['aljazeera', 'bbc', 'timesofisrael', 'ynetnews', 'walla']);
+// Sources that are inherently about Iran — NO keyword filtering needed.
+// Everything else gets filtered to only show Iran/war-related articles.
+const IRAN_SPECIFIC_SOURCES = new Set([
+  // Pro-regime Iranian media
+  'irna', 'fars', 'tasnim', 'irib', 'resalat', 'nournews', 'irantranslate',
+  // Opposition Iranian media
+  'ncri', 'amadnews', 'iranwire', 'iranfocus', 'kayhanlife', 'chri', 'khrn', 'hengaw',
+  // Iran-focused international
+  'iranintl',
+  // Iran-focused think tanks & analysis
+  'iranwatch', 'alma', 'criticalthreats', 'isw',
+  // Iranian state Telegram channels
+  'presstv', 'irna_en_tg', 'farsna',
+  // Iran war-focused Telegram
+  'tg_wfwitness',
+]);
+
+// Sources whose RSS feeds are general (not Iran-specific) and need
+// keyword filtering at the RSS parser level too (double filter)
+const RSS_IRAN_FILTER_SOURCES = new Set([
+  'aljazeera', 'bbc', 'timesofisrael', 'ynetnews', 'walla',
+]);
+
+function matchesIranKeywords(article: Article): boolean {
+  const text = (
+    article.title + ' ' +
+    (article.articleDescription || '') + ' ' +
+    (article.content || '')
+  ).toLowerCase();
+  return IRAN_KEYWORDS.some(kw => text.includes(kw));
+}
 
 export async function fetchAllSources(
   sourcesToFetch?: NewsSource[]
@@ -51,7 +81,7 @@ export async function fetchAllSources(
 }
 
 async function fetchSource(source: NewsSource): Promise<SourceFetchResult> {
-  const filterIran = IRAN_FILTER_SOURCES.has(source.id);
+  const filterRSS = RSS_IRAN_FILTER_SOURCES.has(source.id);
 
   try {
     let articles: Article[];
@@ -62,7 +92,7 @@ async function fetchSource(source: NewsSource): Promise<SourceFetchResult> {
     // Try RSS first
     if (source.rssURL) {
       try {
-        articles = await fetchRSSArticles(source.rssURL, source, filterIran);
+        articles = await fetchRSSArticles(source.rssURL, source, filterRSS);
         console.log(`✅ [${source.id}] RSS success: ${articles.length} articles`);
       } catch (rssError) {
         console.warn(`⚠️ [${source.id}] RSS failed, trying scrape fallback...`);
@@ -91,6 +121,15 @@ async function fetchSource(source: NewsSource): Promise<SourceFetchResult> {
       console.log(`✅ [${source.id}] Scrape success: ${articles.length} articles`);
     } else {
       return { sourceID: source.id, articles: [], error: 'No fetch method' };
+    }
+
+    // Central Iran keyword filter — applied to ALL non-Iran-specific sources
+    if (!IRAN_SPECIFIC_SOURCES.has(source.id)) {
+      const before = articles.length;
+      articles = articles.filter(matchesIranKeywords);
+      if (before !== articles.length) {
+        console.log(`🔎 [${source.id}] Iran filter: ${before} → ${articles.length} articles`);
+      }
     }
 
     if (articles.length === 0) {
