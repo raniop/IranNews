@@ -15,7 +15,8 @@ export const SUPABASE_ANON_KEY = 'sb_publishable_Usltmj6DeTXB2fENaq03Fg_JydDelVZ
 export const CACHE_REVALIDATE_SECONDS = 300; // 5 minutes
 export const MAX_ARTICLES_PER_SOURCE = 100;
 
-// Iran war keywords for filtering non-Iran-specific sources
+// IRAN_KEYWORDS: used for non-Iran sources (CNN, JPost, Telegram IL, etc.)
+// Article must mention Iran at all to pass.
 export const IRAN_KEYWORDS = [
   // Core Iran terms
   'iran', 'iranian', 'tehran', 'persian', 'persia',
@@ -46,6 +47,63 @@ export const IRAN_KEYWORDS = [
   // Hebrew - proxies
   'חיזבאללה', 'חות\'י', 'חות\'ים', 'ציר ההתנגדות',
   'חמאס', 'ג\'יהאד',
+];
+
+// WAR_KEYWORDS: used for Iran-specific sources (IRNA, Tasnim, IranWire, etc.)
+// These sources are already about Iran, so we filter for WAR/military content.
+// An IRNA article about Iranian cinema or agriculture should be filtered OUT.
+export const WAR_KEYWORDS = [
+  // English - military & conflict
+  'war', 'military', 'army', 'missile', 'rocket', 'drone', 'uav',
+  'attack', 'strike', 'bomb', 'bombing', 'shell', 'shelling',
+  'intercept', 'defense', 'defence', 'air defense', 'retaliation', 'retaliate',
+  'weapon', 'weapons', 'arsenal', 'warhead', 'launcher',
+  'combat', 'battle', 'front', 'frontline', 'offensive', 'operation',
+  'kill', 'killed', 'casualty', 'casualties', 'martyr', 'martyrdom',
+  'destroy', 'destroyed', 'destruction', 'damage', 'damaged',
+  'threat', 'threaten', 'escalation', 'escalate', 'de-escalation',
+  'ceasefire', 'truce', 'negotiate', 'negotiation',
+  // English - specific weapons & systems
+  'ballistic', 'cruise missile', 'hypersonic', 'shahed', 'fateh', 'emad', 'ghadr',
+  'sejjil', 'khorramshahr', 'zolfaghar', 'dezful', 'haj qasem',
+  'iron dome', 'arrow', 'david sling', 'thaad', 'patriot', 's-300', 's-400',
+  'radar', 'air force', 'navy', 'irgc', 'revolutionary guard', 'quds force', 'basij',
+  // English - nuclear
+  'nuclear', 'enrichment', 'uranium', 'centrifuge', 'plutonium', 'warhead',
+  'iaea', 'jcpoa', 'breakout', 'weapons-grade', 'fordow', 'natanz', 'isfahan',
+  // English - sanctions & geopolitics
+  'sanctions', 'embargo', 'designation', 'blacklist',
+  'deterrence', 'confrontation', 'coalition', 'allies',
+  // English - proxies & groups
+  'hezbollah', 'houthi', 'houthis', 'hamas', 'islamic jihad',
+  'proxy', 'militia', 'axis of resistance', 'resistance front',
+  'kata\'ib hezbollah', 'pmu', 'hashd', 'ansar allah',
+  // English - intelligence & espionage
+  'intelligence', 'mossad', 'cia', 'espionage', 'sabotage', 'assassination',
+  'covert', 'cyber attack', 'cyberattack',
+  // Hebrew - military & conflict
+  'מלחמה', 'צבא', 'צבאי', 'צה"ל', 'חיל האוויר',
+  'טיל', 'טילים', 'רקטה', 'רקטות', 'מל"ט', 'כטב"ם',
+  'התקפה', 'תקיפה', 'הפצצה', 'הפגזה', 'ירי',
+  'יירוט', 'הגנה', 'הגנה אווירית', 'תגמול', 'מתקפה', 'תקרית',
+  'נשק', 'חימוש', 'ארסנל', 'ראש נפץ', 'משגר',
+  'קרב', 'לחימה', 'חזית', 'מבצע', 'פעולה צבאית',
+  'הרוג', 'הרוגים', 'נפגע', 'נפגעים', 'שהיד', 'חלל',
+  'השמדה', 'הרס', 'נזק', 'פגיעה',
+  'איום', 'הסלמה', 'הפסקת אש',
+  // Hebrew - specific systems
+  'בליסטי', 'שאהד', 'כיפת ברזל', 'חץ', 'קלע דוד',
+  'שיגור', 'פיקוד העורף', 'אזעקה', 'אזעקות', 'מרחב מוגן', 'מקלט',
+  // Hebrew - nuclear
+  'גרעין', 'גרעיני', 'העשרה', 'אורניום', 'צנטריפוגה', 'פצצה גרעינית',
+  'סוכנות אטום', 'הסכם גרעין', 'פורדו', 'נתנז',
+  // Hebrew - sanctions
+  'סנקציות', 'עיצומים', 'חרם',
+  // Hebrew - proxies
+  'חיזבאללה', 'חות\'י', 'חות\'ים', 'חמאס', 'ג\'יהאד',
+  'מיליציה', 'ציר ההתנגדות', 'שלוחות', 'פרוקסי',
+  // Hebrew - intel
+  'מוסד', 'מודיעין', 'ריגול', 'חיסול', 'סייבר',
 ];
 
 // Generic titles to filter out from scraped content

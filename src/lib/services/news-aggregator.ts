@@ -4,10 +4,10 @@ import { fetchRSSArticles } from './rss-parser';
 import { fetchScrapedArticles } from './web-scraper';
 import { fetchJSONAPIArticles } from './json-api-feed';
 import { fetchTelegramArticles } from './telegram-scraper';
-import { IRAN_KEYWORDS } from '../constants';
+import { IRAN_KEYWORDS, WAR_KEYWORDS } from '../constants';
 
-// Sources that are inherently about Iran — NO keyword filtering needed.
-// Everything else gets filtered to only show Iran/war-related articles.
+// Sources that are inherently about Iran.
+// These get filtered by WAR_KEYWORDS (must be about war/military, not general Iran news).
 const IRAN_SPECIFIC_SOURCES = new Set([
   // Pro-regime Iranian media
   'irna', 'fars', 'tasnim', 'irib', 'resalat', 'nournews', 'irantranslate',
@@ -15,16 +15,18 @@ const IRAN_SPECIFIC_SOURCES = new Set([
   'ncri', 'amadnews', 'iranwire', 'iranfocus', 'kayhanlife', 'chri', 'khrn', 'hengaw',
   // Iran-focused international
   'iranintl',
-  // Iran-focused think tanks & analysis
-  'iranwatch', 'alma', 'criticalthreats', 'isw',
   // Iranian state Telegram channels
   'presstv', 'irna_en_tg', 'farsna',
   // Iran war-focused Telegram
   'tg_wfwitness',
 ]);
 
-// Sources whose RSS feeds are general (not Iran-specific) and need
-// keyword filtering at the RSS parser level too (double filter)
+// Think tanks that are already focused on Iran security/military — no filtering needed
+const NO_FILTER_SOURCES = new Set([
+  'iranwatch', 'alma', 'criticalthreats', 'isw',
+]);
+
+// Sources whose RSS feeds are general and need keyword filtering at the RSS parser level too
 const RSS_IRAN_FILTER_SOURCES = new Set([
   'aljazeera', 'bbc', 'timesofisrael', 'ynetnews', 'walla',
 ]);
@@ -36,6 +38,15 @@ function matchesIranKeywords(article: Article): boolean {
     (article.content || '')
   ).toLowerCase();
   return IRAN_KEYWORDS.some(kw => text.includes(kw));
+}
+
+function matchesWarKeywords(article: Article): boolean {
+  const text = (
+    article.title + ' ' +
+    (article.articleDescription || '') + ' ' +
+    (article.content || '')
+  ).toLowerCase();
+  return WAR_KEYWORDS.some(kw => text.includes(kw));
 }
 
 export async function fetchAllSources(
@@ -96,7 +107,6 @@ async function fetchSource(source: NewsSource): Promise<SourceFetchResult> {
         console.log(`✅ [${source.id}] RSS success: ${articles.length} articles`);
       } catch (rssError) {
         console.warn(`⚠️ [${source.id}] RSS failed, trying scrape fallback...`);
-        // Fallback to scraping
         if (source.scrapingConfig) {
           articles = await fetchScrapedArticles(source.baseURL, source.scrapingConfig, source);
           console.log(`✅ [${source.id}] Scrape fallback: ${articles.length} articles`);
@@ -123,12 +133,22 @@ async function fetchSource(source: NewsSource): Promise<SourceFetchResult> {
       return { sourceID: source.id, articles: [], error: 'No fetch method' };
     }
 
-    // Central Iran keyword filter — applied to ALL non-Iran-specific sources
-    if (!IRAN_SPECIFIC_SOURCES.has(source.id)) {
+    // Two-tier filtering:
+    // 1. Think tanks (iranwatch, alma, criticalthreats, isw) → no filter (already war-focused)
+    // 2. Iran-specific sources → WAR filter (skip economy/culture/sport articles)
+    // 3. Everything else → IRAN filter (must mention Iran at all)
+    if (!NO_FILTER_SOURCES.has(source.id)) {
       const before = articles.length;
-      articles = articles.filter(matchesIranKeywords);
-      if (before !== articles.length) {
-        console.log(`🔎 [${source.id}] Iran filter: ${before} → ${articles.length} articles`);
+      if (IRAN_SPECIFIC_SOURCES.has(source.id)) {
+        articles = articles.filter(matchesWarKeywords);
+        if (before !== articles.length) {
+          console.log(`⚔️ [${source.id}] War filter: ${before} → ${articles.length} articles`);
+        }
+      } else {
+        articles = articles.filter(matchesIranKeywords);
+        if (before !== articles.length) {
+          console.log(`🔎 [${source.id}] Iran filter: ${before} → ${articles.length} articles`);
+        }
       }
     }
 
