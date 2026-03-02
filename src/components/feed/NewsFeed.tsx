@@ -226,9 +226,9 @@ function LastUpdated({ fetchedAt }: { fetchedAt: string }) {
       if (mins < 1) {
         setLabel(`${t('time.lastUpdated')} ${t('time.justNow')}`);
       } else if (mins < 60) {
-        setLabel(`${t('time.lastUpdated')} ${mins} ${t('time.minutesAgo')}`);
+        setLabel(`${t('time.lastUpdated')} ${t('time.minutesAgo').replace('{n}', String(mins))}`);
       } else {
-        setLabel(`${t('time.lastUpdated')} ${hours} ${t('time.hoursAgo')}`);
+        setLabel(`${t('time.lastUpdated')} ${t('time.hoursAgo').replace('{n}', String(hours))}`);
       }
     };
 

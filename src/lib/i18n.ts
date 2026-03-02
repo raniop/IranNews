@@ -178,8 +178,8 @@ const translations = {
   // Time
   'time.lastUpdated': { en: 'Updated', he: 'עודכן' },
   'time.justNow': { en: 'just now', he: 'עכשיו' },
-  'time.minutesAgo': { en: 'min ago', he: 'דק׳ לפני' },
-  'time.hoursAgo': { en: 'hr ago', he: 'שע׳ לפני' },
+  'time.minutesAgo': { en: '{n} min ago', he: 'לפני {n} דק׳' },
+  'time.hoursAgo': { en: '{n} hr ago', he: 'לפני {n} שע׳' },
 
   // Common
   'common.retry': { en: 'Retry', he: 'נסה שוב' },
